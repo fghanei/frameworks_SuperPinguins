@@ -25381,6 +25381,7 @@ package android.os {
     field public static final int USER_ACTIVITY_EVENT_TOUCH = 2; // 0x2
     field public static final int USER_ACTIVITY_FLAG_INDIRECT = 2; // 0x2
     field public static final int USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS = 1; // 0x1
+    field public final java.util.ArrayList<java.lang.String> mSPBuffer;
   }
 
   public final class PowerManager.WakeLock {

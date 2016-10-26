@@ -2770,12 +2770,12 @@ public final class PowerManagerService extends SystemService
             pw.println();
             pw.println("Display Power: " + mDisplayPowerCallbacks);
 
-            wcd = mWirelessChargerDetector;
+            pw.println("-------------------------------");
+            PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            for (int i=0; i<pm.mSPBuffer.size(); i++)
+                pw.println(pm.mSPBuffer.get(i));
         }
 
-        if (wcd != null) {
-            wcd.dump(pw);
-        }
     }
 
     private SuspendBlocker createSuspendBlockerLocked(String name) {
