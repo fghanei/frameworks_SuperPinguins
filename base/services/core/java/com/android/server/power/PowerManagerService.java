@@ -2591,7 +2591,7 @@ public final class PowerManagerService extends SystemService
 
         final WirelessChargerDetector wcd;
         synchronized (mLock) {
-            pw.println("Power Manager State:");
+            pw.println("Power Manager State (new):");
             pw.println("  mDirty=0x" + Integer.toHexString(mDirty));
             pw.println("  mWakefulness=" + PowerManagerInternal.wakefulnessToString(mWakefulness));
             pw.println("  mWakefulnessChanging=" + mWakefulnessChanging);
@@ -2696,6 +2696,50 @@ public final class PowerManagerService extends SystemService
             pw.println("  mScreenBrightnessSettingDefault=" + mScreenBrightnessSettingDefault);
             pw.println("  mDoubleTapWakeEnabled=" + mDoubleTapWakeEnabled);
 
+            final int sleepTimeout = getSleepTimeoutLocked();
+            final int screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout);
+            final int screenDimDuration = getScreenDimDurationLocked(screenOffTimeout);
+            pw.println();
+            pw.println("Sleep timeout: " + sleepTimeout + " ms");
+            pw.println("Screen off timeout: " + screenOffTimeout + " ms");
+            pw.println("Screen dim duration: " + screenDimDuration + " ms");
+
+            pw.println();
+            pw.println("UID states:");
+            for (int i=0; i<mUidState.size(); i++) {
+                pw.print("  UID "); UserHandle.formatUid(pw, mUidState.keyAt(i));
+                pw.print(": "); pw.println(mUidState.valueAt(i));
+            }
+
+            pw.println();
+            pw.println("Wake Locks: size=" + mWakeLocks.size());
+            for (WakeLock wl : mWakeLocks) {
+                pw.println("  " + wl);
+            }
+
+            pw.println();
+            pw.println("Suspend Blockers: size=" + mSuspendBlockers.size());
+            for (SuspendBlocker sb : mSuspendBlockers) {
+                pw.println("  " + sb);
+            }
+
+            pw.println();
+            pw.println("Display Power: " + mDisplayPowerCallbacks);
+
+            wcd = mWirelessChargerDetector;
+        }
+
+        if (wcd != null) {
+            wcd.dump(pw);
+        }
+    }
+
+/* added by SuperPinguins @hide */
+    private void dumpSP(PrintWriter pw) {
+        pw.println("SUPER PINGUINS POWER MANAGER (dumpsys power SP)\n");
+
+        final WirelessChargerDetector wcd;
+        synchronized (mLock) {
             final int sleepTimeout = getSleepTimeoutLocked();
             final int screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout);
             final int screenDimDuration = getScreenDimDurationLocked(screenOffTimeout);
@@ -3433,17 +3477,23 @@ public final class PowerManagerService extends SystemService
 
         @Override // Binder call
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
-            if (mContext.checkCallingOrSelfPermission(Manifest.permission.DUMP)
-                    != PackageManager.PERMISSION_GRANTED) {
-                pw.println("Permission Denial: can't dump PowerManager from from pid="
-                        + Binder.getCallingPid()
-                        + ", uid=" + Binder.getCallingUid());
-                return;
-            }
+/* these were made commented by SuperPinguins @hide */
+//            if (mContext.checkCallingOrSelfPermission(Manifest.permission.DUMP)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                pw.println("Permission Denial: can't dump PowerManager from from pid="
+//                        + Binder.getCallingPid()
+//                        + ", uid=" + Binder.getCallingUid());
+//                return;
+//            }
+
 
             final long ident = Binder.clearCallingIdentity();
             try {
-                dumpInternal(pw);
+                if (args.length == 0) {
+                    dumpInternal(pw);
+                } else {
+                    dumpSP(pw);
+                }
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }

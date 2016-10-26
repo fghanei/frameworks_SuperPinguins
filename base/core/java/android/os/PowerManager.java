@@ -20,6 +20,7 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.util.Log;
+import java.util.ArrayList; /* added by Super Pinguins */
 
 /**
  * This class gives you control of the power state of the device.
@@ -100,6 +101,14 @@ import android.util.Log;
  * </p>
  */
 public final class PowerManager {
+    /*added by Super Pinguins @hide */
+    public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
+        add("A");
+        add("B");
+        add("C");
+    }};
+
+
     private static final String TAG = "PowerManager";
 
     /* NOTE: Wake lock levels were previously defined as a bit field, except that only a few
@@ -401,6 +410,8 @@ public final class PowerManager {
         mContext = context;
         mService = service;
         mHandler = handler;
+/*added by Super Pinguings @hide */
+        mSPBuffer.add("hello Pinguin");
     }
 
     /**
