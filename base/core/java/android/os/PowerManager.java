@@ -316,7 +316,7 @@ public final class PowerManager {
     public static final int USER_ACTIVITY_EVENT_TOUCH = 2;
 
     /**
-     * User activity flag: If already dimmed, extend the dim timeout
+     /acqu* User activity flag: If already dimmed, extend the dim timeout
      * but do not brighten.  This flag is useful for keeping the screen on
      * a little longer without causing a visible change such as when
      * the power key is pressed.
@@ -1108,6 +1108,7 @@ public final class PowerManager {
             }
         }
 
+       /** Super Pinguins @hide ***/
         private void acquireLocked() {
             if (!mRefCounted || mCount++ == 0) {
                 // Do this even if the wake lock is already thought to be held (mHeld == true)
@@ -1121,11 +1122,23 @@ public final class PowerManager {
                 try {
                     mService.acquireWakeLock(mToken, mFlags, mTag, mPackageName, mWorkSource,
                             mHistoryTag);
-                } catch (RemoteException e) {
+     
+                   /* SuperPinguins @hide*/               
+                    mSPBuffer.add("mFlags: "+ mFlags);
+                    mSPBuffer.add("mTag: "+mTag);
+                    mSPBuffer.add("mPackageName: "+mPackageName);
+                    mSPBuffer.add("mCount: "+mCount);
+                    mSPBuffer.add("mRefCounted: "+mRefCounted);
+                    mSPBuffer.add("mWorkSource: "+ mWorkSource);
+                    mSPBuffer.add("mHistoryTag: "+mHistoryTag);
+                    mSPBuffer.add("mTraceName: "+mTraceName);
+                }catch(RemoteException e){
                 }
-                mHeld = true;
-            }
-        }
+                    mHeld = true;
+                    mSPBuffer.add("mHeld: "+mHeld);
+          }
+
+      }
 
         /**
          * Releases the wake lock.
