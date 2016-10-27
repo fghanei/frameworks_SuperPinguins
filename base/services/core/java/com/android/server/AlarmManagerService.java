@@ -79,6 +79,10 @@ import static android.app.AlarmManager.ELAPSED_REALTIME;
 import com.android.internal.util.LocalLog;
 
 class AlarmManagerService extends SystemService {
+    /* added by SuperPinguins @hide */
+    private final Context mContext;
+    private static context;
+
     private static final int RTC_WAKEUP_MASK = 1 << RTC_WAKEUP;
     private static final int RTC_MASK = 1 << RTC;
     private static final int ELAPSED_REALTIME_WAKEUP_MASK = 1 << ELAPSED_REALTIME_WAKEUP;
@@ -101,7 +105,7 @@ class AlarmManagerService extends SystemService {
     static final Intent mBackgroundIntent
             = new Intent().addFlags(Intent.FLAG_FROM_BACKGROUND);
     static final IncreasingTimeOrder sIncreasingTimeOrder = new IncreasingTimeOrder();
-    
+
     static final boolean WAKEUP_STATS = false;
 
     private static final Intent NEXT_ALARM_CLOCK_CHANGED_INTENT = new Intent(
@@ -596,9 +600,16 @@ class AlarmManagerService extends SystemService {
     Alarm mNextWakeFromIdle = null;
     ArrayList<Alarm> mPendingWhileIdleAlarms = new ArrayList<>();
 
+    /*** SuperPinguins @hide ***/
     public AlarmManagerService(Context context) {
         super(context);
         mConstants = new Constants(mHandler);
+        /*added by Super Penguins @hide */
+        AlarmManagerService.context = getApplicationContext();
+
+        mContext = context;
+        AlarmManager am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        am.mSPAlarmBuffer.add("hello Penguin Alarm");
     }
 
     static long convertToElapsed(long when, int type) {
@@ -812,14 +823,14 @@ class AlarmManagerService extends SystemService {
         intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
         mDateChangeSender = PendingIntent.getBroadcastAsUser(getContext(), 0, intent,
                 Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT, UserHandle.ALL);
-        
+
         // now that we have initied the driver schedule the alarm
         mClockReceiver = new ClockReceiver();
         mClockReceiver.scheduleTimeTickEvent();
         mClockReceiver.scheduleDateChangedEvent();
         mInteractiveStateReceiver = new InteractiveStateReceiver();
         mUninstallReceiver = new UninstallReceiver();
-        
+
         if (mNativeData != 0) {
             AlarmThread waitThread = new AlarmThread();
             waitThread.start();
@@ -1162,17 +1173,36 @@ class AlarmManagerService extends SystemService {
             return getNextAlarmClockImpl(userId);
         }
 
+        /*** SuperPinguins @hide ***/
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
-            if (getContext().checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
-                    != PackageManager.PERMISSION_GRANTED) {
-                pw.println("Permission Denial: can't dump AlarmManager from from pid="
-                        + Binder.getCallingPid()
-                        + ", uid=" + Binder.getCallingUid());
-                return;
-            }
+            // if (getContext().checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
+            //         != PackageManager.PERMISSION_GRANTED) {
+            //     pw.println("Permission Denial: can't dump AlarmManager from from pid="
+            //             + Binder.getCallingPid()
+            //             + ", uid=" + Binder.getCallingUid());
+            //     return;
+            // }
+            //
+            // dumpImpl(pw);
 
-            dumpImpl(pw);
+            /*** SuperPinguins @hide ***/
+            try {
+                if (args.length == 0) {
+                    dumpImpl(pw);
+                } else {
+                    pw.println("SUPER PINGUINS POWER MANAGER - ALARM(dumpsys power SP)\n");
+
+                    synchronized (mLock) {
+                        pw.println("-------------------------------");
+                        AlarmManager am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+                        for (int i=0; i<am.mSPAlarmBuffer.size(); i++)
+                            pw.println(am.mSPAlarmBuffer.get(i));
+                    }
+                }
+            } catch (Exception e){
+
+            }
         }
     };
 
@@ -1777,12 +1807,12 @@ class AlarmManagerService extends SystemService {
                 alarmSeconds = when / 1000;
                 alarmNanoseconds = (when % 1000) * 1000 * 1000;
             }
-            
+
             set(mNativeData, type, alarmSeconds, alarmNanoseconds);
         } else {
             Message msg = Message.obtain();
             msg.what = ALARM_EVENT;
-            
+
             mHandler.removeMessages(ALARM_EVENT);
             mHandler.sendMessageAtTime(msg, when);
         }
@@ -1941,7 +1971,7 @@ class AlarmManagerService extends SystemService {
             return 0;
         }
     }
-    
+
     private static class Alarm {
         public final int type;
         public final long origWhen;
@@ -1960,6 +1990,7 @@ class AlarmManagerService extends SystemService {
         public long repeatInterval;
         public PriorityClass priorityClass;
 
+        /*** SuperPinguins @hide ***/
         public Alarm(int _type, long _when, long _whenElapsed, long _windowLength, long _maxWhen,
                 long _interval, PendingIntent _op, WorkSource _ws, int _flags,
                 AlarmManager.AlarmClockInfo _info, int _uid) {
@@ -1978,6 +2009,26 @@ class AlarmManagerService extends SystemService {
             flags = _flags;
             alarmClock = _info;
             uid = _uid;
+
+            /*** SuperPinguins @hide ***/
+            AlarmManager am = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+            am.mSPAlarmBuffer.add("");
+            am.mSPAlarmBuffer.add("type: " + type);
+            am.mSPAlarmBuffer.add("origWhen: " + origWhen);
+            am.mSPAlarmBuffer.add("wakeup: " + wakeup);
+            am.mSPAlarmBuffer.add("operation: " + operation);
+            am.mSPAlarmBuffer.add("tag: " + tag);
+            am.mSPAlarmBuffer.add("workSource: " + workSource);
+            am.mSPAlarmBuffer.add("flags: " + flags);
+            am.mSPAlarmBuffer.add("alarmClock: " + alarmClock);
+            am.mSPAlarmBuffer.add("uid: " + uid);
+            am.mSPAlarmBuffer.add("count: " + count);
+            am.mSPAlarmBuffer.add("when: " + when);
+            am.mSPAlarmBuffer.add("windowLength: " + windowLength);
+            am.mSPAlarmBuffer.add("whenElapsed: " + whenElapsed);
+            am.mSPAlarmBuffer.add("maxWhenElapsed: " + maxWhenElapsed);
+            am.mSPAlarmBuffer.add("repeatInterval: " + repeatInterval);
+            am.mSPAlarmBuffer.add("");
         }
 
         public static String makeTag(PendingIntent pi, int type) {
@@ -2181,7 +2232,7 @@ class AlarmManagerService extends SystemService {
         {
             super("AlarmManager");
         }
-        
+
         public void run()
         {
             ArrayList<Alarm> triggerList = new ArrayList<Alarm>();
@@ -2333,10 +2384,10 @@ class AlarmManagerService extends SystemService {
         public static final int MINUTE_CHANGE_EVENT = 2;
         public static final int DATE_CHANGE_EVENT = 3;
         public static final int SEND_NEXT_ALARM_CLOCK_CHANGED = 4;
-        
+
         public AlarmHandler() {
         }
-        
+
         public void handleMessage(Message msg) {
             if (msg.what == ALARM_EVENT) {
                 ArrayList<Alarm> triggerList = new ArrayList<Alarm>();
@@ -2365,7 +2416,7 @@ class AlarmManagerService extends SystemService {
             }
         }
     }
-    
+
     class ClockReceiver extends BroadcastReceiver {
         public ClockReceiver() {
             IntentFilter filter = new IntentFilter();
@@ -2373,7 +2424,7 @@ class AlarmManagerService extends SystemService {
             filter.addAction(Intent.ACTION_DATE_CHANGED);
             getContext().registerReceiver(this, filter);
         }
-        
+
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
@@ -2392,7 +2443,7 @@ class AlarmManagerService extends SystemService {
                 scheduleDateChangedEvent();
             }
         }
-        
+
         public void scheduleTimeTickEvent() {
             final long currentTime = System.currentTimeMillis();
             final long nextTime = 60000 * ((currentTime / 60000) + 1);
@@ -2421,7 +2472,7 @@ class AlarmManagerService extends SystemService {
                     AlarmManager.FLAG_STANDALONE, workSource, null, Process.myUid());
         }
     }
-    
+
     class InteractiveStateReceiver extends BroadcastReceiver {
         public InteractiveStateReceiver() {
             IntentFilter filter = new IntentFilter();
@@ -2454,7 +2505,7 @@ class AlarmManagerService extends SystemService {
             sdFilter.addAction(Intent.ACTION_UID_REMOVED);
             getContext().registerReceiver(this, sdFilter);
         }
-        
+
         @Override
         public void onReceive(Context context, Intent intent) {
             synchronized (mLock) {
@@ -2512,7 +2563,7 @@ class AlarmManagerService extends SystemService {
             }
         }
     }
-    
+
     private final BroadcastStats getStatsLocked(PendingIntent pi) {
         String pkg = pi.getCreatorPackage();
         int uid = pi.getCreatorUid();
