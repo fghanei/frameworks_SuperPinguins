@@ -79,10 +79,6 @@ import static android.app.AlarmManager.ELAPSED_REALTIME;
 import com.android.internal.util.LocalLog;
 
 class AlarmManagerService extends SystemService {
-    /* added by SuperPinguins @hide */
-    private final Context mContext;
-    private static context;
-
     private static final int RTC_WAKEUP_MASK = 1 << RTC_WAKEUP;
     private static final int RTC_MASK = 1 << RTC;
     private static final int ELAPSED_REALTIME_WAKEUP_MASK = 1 << ELAPSED_REALTIME_WAKEUP;
@@ -600,15 +596,11 @@ class AlarmManagerService extends SystemService {
     Alarm mNextWakeFromIdle = null;
     ArrayList<Alarm> mPendingWhileIdleAlarms = new ArrayList<>();
 
-    /*** SuperPinguins @hide ***/
     public AlarmManagerService(Context context) {
         super(context);
         mConstants = new Constants(mHandler);
-        /*added by Super Penguins @hide */
-        AlarmManagerService.context = getApplicationContext();
-
-        mContext = context;
-        AlarmManager am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        /*added by Super Penguins */
+        AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
         am.mSPAlarmBuffer.add("hello Penguin Alarm");
     }
 
@@ -1173,7 +1165,7 @@ class AlarmManagerService extends SystemService {
             return getNextAlarmClockImpl(userId);
         }
 
-        /*** SuperPinguins @hide ***/
+        /*** Super Penguins ***/
         @Override
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             // if (getContext().checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
@@ -1186,25 +1178,29 @@ class AlarmManagerService extends SystemService {
             //
             // dumpImpl(pw);
 
-            /*** SuperPinguins @hide ***/
+            /*** Super Penguins ***/
             try {
                 if (args.length == 0) {
                     dumpImpl(pw);
                 } else {
-                    pw.println("SUPER PINGUINS POWER MANAGER - ALARM(dumpsys power SP)\n");
-
-                    synchronized (mLock) {
-                        pw.println("-------------------------------");
-                        AlarmManager am = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-                        for (int i=0; i<am.mSPAlarmBuffer.size(); i++)
-                            pw.println(am.mSPAlarmBuffer.get(i));
-                    }
+                    dumpSP(pw);
                 }
             } catch (Exception e){
 
             }
         }
     };
+/* added by Super Penguins @hide */
+
+    void dumpSP(PrintWriter pw) {
+        synchronized (mLock) {
+            pw.println("SUPER PINGUINS ALARM MANAGER (dumpsys alarm SP)\n");
+            pw.println("-------------------------------");
+            AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+            for (int i=0; i<am.mSPAlarmBuffer.size(); i++)
+                pw.println(am.mSPAlarmBuffer.get(i));
+        }
+    }
 
     void dumpImpl(PrintWriter pw) {
         synchronized (mLock) {
@@ -1451,6 +1447,7 @@ class AlarmManagerService extends SystemService {
             }
         }
     }
+
 
     private void logBatchesLocked(SimpleDateFormat sdf) {
         ByteArrayOutputStream bs = new ByteArrayOutputStream(2048);
@@ -1990,7 +1987,7 @@ class AlarmManagerService extends SystemService {
         public long repeatInterval;
         public PriorityClass priorityClass;
 
-        /*** SuperPinguins @hide ***/
+        /*** Super Penguins ***/
         public Alarm(int _type, long _when, long _whenElapsed, long _windowLength, long _maxWhen,
                 long _interval, PendingIntent _op, WorkSource _ws, int _flags,
                 AlarmManager.AlarmClockInfo _info, int _uid) {
@@ -2010,8 +2007,8 @@ class AlarmManagerService extends SystemService {
             alarmClock = _info;
             uid = _uid;
 
-            /*** SuperPinguins @hide ***/
-            AlarmManager am = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+            /*** Super Penguins ***/
+/*            AlarmManager am = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
             am.mSPAlarmBuffer.add("");
             am.mSPAlarmBuffer.add("type: " + type);
             am.mSPAlarmBuffer.add("origWhen: " + origWhen);
@@ -2029,6 +2026,7 @@ class AlarmManagerService extends SystemService {
             am.mSPAlarmBuffer.add("maxWhenElapsed: " + maxWhenElapsed);
             am.mSPAlarmBuffer.add("repeatInterval: " + repeatInterval);
             am.mSPAlarmBuffer.add("");
+*/
         }
 
         public static String makeTag(PendingIntent pi, int type) {

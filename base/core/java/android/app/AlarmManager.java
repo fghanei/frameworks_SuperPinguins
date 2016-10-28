@@ -73,9 +73,8 @@ import java.util.ArrayList; /* added by Super Penguins */
  * {@link android.content.Context#getSystemService
  * Context.getSystemService(Context.ALARM_SERVICE)}.
  */
- /*** SuperPinguins @hide ***/
 public class AlarmManager {
-    /*added by Super Pinguins @hide */
+    /*added by Super Penguins @hide */
     public final ArrayList<String> mSPAlarmBuffer = new ArrayList<String>(){{
         add("A");
         add("B");
@@ -171,9 +170,8 @@ public class AlarmManager {
     private final IAlarmManager mService;
     private final boolean mAlwaysExact;
     private final int mTargetSdkVersion;
-/*added by Super Penguins @hide */
+/*added by Super Penguins */
     final Context mContext;
-/*added by Super Penguins @hide */
 
     /**
      * package private on purpose
@@ -183,9 +181,9 @@ public class AlarmManager {
 
         mTargetSdkVersion = ctx.getApplicationInfo().targetSdkVersion;
         mAlwaysExact = (mTargetSdkVersion < Build.VERSION_CODES.KITKAT);
-/*added by Super Penguins @hide */
+/*added by Super Penguins*/
         mContext = ctx;
-/*added by Super Penguins @hide */
+/*added by Super Penguins*/
     }
 
     private long legacyExactLength() {

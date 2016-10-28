@@ -20,7 +20,7 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.util.Log;
-import java.util.ArrayList; /* added by Super Pinguins */
+import java.util.ArrayList; /* added by Super Penguins */
 
 /**
  * This class gives you control of the power state of the device.
@@ -101,7 +101,7 @@ import java.util.ArrayList; /* added by Super Pinguins */
  * </p>
  */
 public final class PowerManager {
-    /*added by Super Pinguins @hide */
+    /*added by Super Penguins @hide */
     public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
         add("A");
         add("B");
@@ -410,7 +410,7 @@ public final class PowerManager {
         mContext = context;
         mService = service;
         mHandler = handler;
-        /*added by Super Penguins @hide */
+        /*added by Super Penguins*/
         mSPBuffer.add("hello Penguin");
     }
 
@@ -1108,7 +1108,7 @@ public final class PowerManager {
             }
         }
 
-       /** Super Pinguins @hide ***/
+       /** Super Penguins @hide ***/
         private void acquireLocked() {
             if (!mRefCounted || mCount++ == 0) {
                 // Do this even if the wake lock is already thought to be held (mHeld == true)
@@ -1123,7 +1123,9 @@ public final class PowerManager {
                     mService.acquireWakeLock(mToken, mFlags, mTag, mPackageName, mWorkSource,
                             mHistoryTag);
 
-                   /* SuperPinguins @hide*/
+                   /* Super Penguins */
+                    mSPBuffer.add("---ACQUIRE---"); 
+                    mSPBuffer.add("Timestamp: "+System.currentTimeMillis()); 
                     mSPBuffer.add("mFlags: "+ mFlags);
                     mSPBuffer.add("mTag: "+mTag);
                     mSPBuffer.add("mPackageName: "+mPackageName);
@@ -1172,6 +1174,17 @@ public final class PowerManager {
                         Trace.asyncTraceEnd(Trace.TRACE_TAG_POWER, mTraceName, 0);
                         try {
                             mService.releaseWakeLock(mToken, flags);
+                           /* Super Penguins */
+                            mSPBuffer.add("---RELEASE---"); 
+                            mSPBuffer.add("Timestamp: "+System.currentTimeMillis()); 
+                            mSPBuffer.add("mFlags: "+ mFlags);
+                            mSPBuffer.add("mTag: "+mTag);
+                            mSPBuffer.add("mPackageName: "+mPackageName);
+                            mSPBuffer.add("mCount: "+mCount);
+                            mSPBuffer.add("mRefCounted: "+mRefCounted);
+                            mSPBuffer.add("mWorkSource: "+ mWorkSource);
+                            mSPBuffer.add("mHistoryTag: "+mHistoryTag);
+                            mSPBuffer.add("mTraceName: "+mTraceName);
                         } catch (RemoteException e) {
                         }
                         mHeld = false;

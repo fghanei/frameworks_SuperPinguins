@@ -2734,7 +2734,7 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-/* added by SuperPinguins @hide */
+/* added by Super Penguins @hide */
     private void dumpSP(PrintWriter pw) {
         pw.println("SUPER PINGUINS POWER MANAGER (dumpsys power SP)\n");
 
@@ -3477,7 +3477,7 @@ public final class PowerManagerService extends SystemService
 
         @Override // Binder call
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
-/* these were made commented by SuperPinguins @hide */
+/* these were made commented by Super Penguins @hide */
 //            if (mContext.checkCallingOrSelfPermission(Manifest.permission.DUMP)
 //                    != PackageManager.PERMISSION_GRANTED) {
 //                pw.println("Permission Denial: can't dump PowerManager from from pid="
@@ -3485,8 +3485,6 @@ public final class PowerManagerService extends SystemService
 //                        + ", uid=" + Binder.getCallingUid());
 //                return;
 //            }
-
-
             final long ident = Binder.clearCallingIdentity();
             try {
                 if (args.length == 0) {
