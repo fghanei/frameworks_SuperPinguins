@@ -21,6 +21,8 @@ import android.annotation.SystemApi;
 import android.content.Context;
 import android.util.Log;
 import java.util.ArrayList; /* added by Super Penguins */
+import java.util.HashMap;   /* added by Super Penguins */
+import java.util.Map;       /* added by Super Penguins */
 
 /**
  * This class gives you control of the power state of the device.
@@ -100,13 +102,23 @@ import java.util.ArrayList; /* added by Super Penguins */
  * permission in an {@code &lt;uses-permission&gt;} element of the application's manifest.
  * </p>
  */
+/*added by Super Penguins */
 public final class PowerManager {
-    /*added by Super Penguins @hide */
-    public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
-        add("A");
-        add("B");
-        add("C");
-    }};
+    /*added by Super Penguins */
+//    public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
+//        add("START OF SP BUFFER");
+//        add("******************");
+//    }};
+    public final Map<Integer, String> mSPBufferCurrent = new HashMap<Integer, String>();
+    /*added by Super Penguings */
+    public final Map<Integer, String> mSPBufferHistory = new HashMap<Integer, String>();
+    /*added by Super Penguings */
+    public Integer wakelockNumber = 0;
+    // public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
+    //     add("A");
+    //     add("B");
+    //     add("C");
+    // }};
 
 
     private static final String TAG = "PowerManager";
@@ -406,12 +418,17 @@ public final class PowerManager {
     /**
      * {@hide}
      */
+/*added by Super Penguings */
     public PowerManager(Context context, IPowerManager service, Handler handler) {
         mContext = context;
         mService = service;
         mHandler = handler;
-        /*added by Super Penguins*/
-        mSPBuffer.add("hello Penguin");
+/*added by Super Penguings */
+        mSPBuffer.add("PowerManager Constructor");
+        mSPBuffer.add("========================");
+        // mSPBufferCurrent.put(67890, "TEST1");
+        // mSPBufferHistory.put(12345, "TEST2");
+        // mSPBuffer.add("hello Penguin");
     }
 
     /**
@@ -1019,6 +1036,7 @@ public final class PowerManager {
      * device's battery excessively.
      * </p>
      */
+     /*added by Super Penguings */
     public final class WakeLock {
         private int mFlags;
         private String mTag;
@@ -1030,6 +1048,10 @@ public final class PowerManager {
         private WorkSource mWorkSource;
         private String mHistoryTag;
         private final String mTraceName;
+        /* SuperPenguins */
+        private long mSystemTime;
+        /*added by Super Penguings */
+        private int mWakelockNumber;
 
         private final Runnable mReleaser = new Runnable() {
             public void run() {
@@ -1108,7 +1130,7 @@ public final class PowerManager {
             }
         }
 
-       /** Super Penguins @hide ***/
+       /* Super Penguins */
         private void acquireLocked() {
             if (!mRefCounted || mCount++ == 0) {
                 // Do this even if the wake lock is already thought to be held (mHeld == true)
@@ -1122,22 +1144,41 @@ public final class PowerManager {
                 try {
                     mService.acquireWakeLock(mToken, mFlags, mTag, mPackageName, mWorkSource,
                             mHistoryTag);
-
-                   /* Super Penguins */
-                    mSPBuffer.add("---ACQUIRE---"); 
-                    mSPBuffer.add("Timestamp: "+System.currentTimeMillis()); 
-                    mSPBuffer.add("mFlags: "+ mFlags);
-                    mSPBuffer.add("mTag: "+mTag);
-                    mSPBuffer.add("mPackageName: "+mPackageName);
-                    mSPBuffer.add("mCount: "+mCount);
-                    mSPBuffer.add("mRefCounted: "+mRefCounted);
-                    mSPBuffer.add("mWorkSource: "+ mWorkSource);
-                    mSPBuffer.add("mHistoryTag: "+mHistoryTag);
-                    mSPBuffer.add("mTraceName: "+mTraceName);
+     
+                   /* Super Penguins */               
+                    mSPBuffer.add("---- WAKELOCK ACQUIRE >>>>");
+                    mSPBuffer.add("mFlags: " + mFlags + " \tmTag: " + mTag + " \tmPackageName: " + mPackageName);
+                    mSPBuffer.add("mCount: " + mCount + " \tmRefCounted: " + mRefCounted + "\tmWorkSource: " + mWorkSource);
+                    mSPBuffer.add("mHistoryTag: " + mHistoryTag + " \tmTraceName: " + mTraceName);
                 }catch(RemoteException e){
+
+
+                    /* SuperPenguins */
+                    wakelockNumber++;
+                    mWakelockNumber = wakelockNumber;
+                    mSystemTime = System.currentTimeMillis();
+                    mSPBufferCurrent.put(mWakelockNumber,"\nWAKELOCK ACQUIRED" +
+                                                         "\nmTraceName: " + mTraceName +
+                                                         "\nmHistoryTag: " + mHistoryTag +
+                                                         "\nmTag: " + mTag +
+                                                         "\nmSystemTime Start: " + mSystemTime);
+
+                    // mSPBuffer.add("");
+                    // mSPBuffer.add("WAKELOCK ACQUIRED");
+                    // mSPBuffer.add("+ mTraceName: " + mTraceName);
+                    // mSPBuffer.add("mHistoryTag: " + mHistoryTag);
+                    // mSPBuffer.add("systemTime start: " + systemTime);
+                    // mSPBuffer.add("mTag: " + mTag);
+                    // // mSPBuffer.add("mFlags: " + mFlags);
+                    // // mSPBuffer.add("mCount: " + mCount);
+                    // // mSPBuffer.add("mRefCounted: " + mRefCounted);
+                    // // mSPBuffer.add("mWorkSource: " + mWorkSource);
+                    // // mSPBuffer.add("mPackageName: " + mPackageName);
+                    // mSPBuffer.add("");
+                } catch(RemoteException e){
                 }
                     mHeld = true;
-                    mSPBuffer.add("mHeld: "+mHeld);
+                    // mSPBuffer.add("mHeld: "+mHeld);
           }
 
       }
@@ -1150,8 +1191,34 @@ public final class PowerManager {
          * not if there are other wake locks still held.
          * </p>
          */
+         /*added by Super Penguings */
         public void release() {
             release(0);
+            /* SuperPenguins */
+            long endTime  = System.currentTimeMillis();
+            long totalTime = endTime - mSystemTime;
+            mSPBufferCurrent.remove(mWakelockNumber);
+            if (totalTime > 1000) {
+                mSPBufferHistory.put(mWakelockNumber, "\nmTraceName: " + mTraceName +
+                                                      "\nmHistoryTag: " + mHistoryTag +
+                                                      "\nmTag: " + mTag +
+                                                      "\nstartTime: " + mSystemTime +
+                                                      "\nendTime: " + endTime +
+                                                      "\nTotal mSecs Active: " + totalTime);
+            }
+
+            // mSPBuffer.add("");
+            // mSPBuffer.add("WAKELOCK RELEASED");
+            // mSPBuffer.add("mTraceName: " + mTraceName);
+            // mSPBuffer.add("mHistoryTag: " + mHistoryTag);
+            // mSPBuffer.add("systemTime start: " + systemTime);
+            // mSPBuffer.add("mTag: " + mTag);
+            // // mSPBuffer.add("mFlags: " + mFlags);
+            // // mSPBuffer.add("mCount: " + mCount);
+            // // mSPBuffer.add("mRefCounted: " + mRefCounted);
+            // // mSPBuffer.add("mWorkSource: " + mWorkSource);
+            // // mSPBuffer.add("mPackageName: " + mPackageName);
+            // mSPBuffer.add("");
         }
 
         /**
@@ -1174,17 +1241,11 @@ public final class PowerManager {
                         Trace.asyncTraceEnd(Trace.TRACE_TAG_POWER, mTraceName, 0);
                         try {
                             mService.releaseWakeLock(mToken, flags);
-                           /* Super Penguins */
-                            mSPBuffer.add("---RELEASE---"); 
-                            mSPBuffer.add("Timestamp: "+System.currentTimeMillis()); 
-                            mSPBuffer.add("mFlags: "+ mFlags);
-                            mSPBuffer.add("mTag: "+mTag);
-                            mSPBuffer.add("mPackageName: "+mPackageName);
-                            mSPBuffer.add("mCount: "+mCount);
-                            mSPBuffer.add("mRefCounted: "+mRefCounted);
-                            mSPBuffer.add("mWorkSource: "+ mWorkSource);
-                            mSPBuffer.add("mHistoryTag: "+mHistoryTag);
-                            mSPBuffer.add("mTraceName: "+mTraceName);
+                           /* Super Penguins */               
+                            mSPBuffer.add("---- WAKELOCK RELEASE <<<<");
+                            mSPBuffer.add("mFlags: " + mFlags + " \tmTag: " + mTag + " \tmPackageName: " + mPackageName);
+                            mSPBuffer.add("mCount: " + mCount + " \tmRefCounted: " + mRefCounted + "\tmWorkSource: " + mWorkSource);
+                            mSPBuffer.add("mHistoryTag: " + mHistoryTag + " \tmTraceName: " + mTraceName);
                         } catch (RemoteException e) {
                         }
                         mHeld = false;

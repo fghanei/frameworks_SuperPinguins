@@ -82,6 +82,10 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 
+import java.util.Iterator; /* SuperPenguins */
+import java.util.HashMap;  /* SuperPenguins */
+import java.util.Map;      /* SuperPenguins */
+
 /**
  * The power manager service is responsible for coordinating power management
  * functions on the device.
@@ -2770,10 +2774,25 @@ public final class PowerManagerService extends SystemService
             pw.println();
             pw.println("Display Power: " + mDisplayPowerCallbacks);
 
-            pw.println("------------SP-------------------");
+            pw.println("======= Wakelocks Info =======");
             PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-            for (int i=0; i<pm.mSPBuffer.size(); i++)
-                pw.println(pm.mSPBuffer.get(i));
+            // for (int i=0; i<pm.mSPBuffer.size(); i++)
+            //     pw.println(pm.mSPBuffer.get(i));
+            pw.println("WAKELOCKS WHICH HAVE ENDED AND WERE ACTIVE FOR 1000 MS +");
+            Iterator it = pm.mSPBufferHistory.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                pw.println(pair.getValue());
+                it.remove(); // avoids a ConcurrentModificationException
+            }
+
+            pw.println("ACTIVE WAKELOCKS");
+            it = pm.mSPBufferCurrent.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                pw.println(pair.getValue());
+                it.remove(); // avoids a ConcurrentModificationException
+            }
         }
 
     }
@@ -3477,7 +3496,7 @@ public final class PowerManagerService extends SystemService
 
         @Override // Binder call
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
-/* these were made commented by Super Penguins @hide */
+/* these were made commented by Super Penguins */
 //            if (mContext.checkCallingOrSelfPermission(Manifest.permission.DUMP)
 //                    != PackageManager.PERMISSION_GRANTED) {
 //                pw.println("Permission Denial: can't dump PowerManager from from pid="
@@ -3485,6 +3504,7 @@ public final class PowerManagerService extends SystemService
 //                        + ", uid=" + Binder.getCallingUid());
 //                return;
 //            }
+
             final long ident = Binder.clearCallingIdentity();
             try {
                 if (args.length == 0) {
