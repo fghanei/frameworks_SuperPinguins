@@ -104,18 +104,11 @@ import java.util.Map;       /* added by Super Penguins */
 /*added by Super Penguins */
 public final class PowerManager {
     /*added by Super Penguins */
-//    public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
-//        add("START OF SP BUFFER");
-//        add("******************");
-//    }};
-    // public final ArrayList<String> mSPBuffer = new ArrayList<String>(){{
-    //     add("A");
-    //     add("B");
-    //     add("C");
-    // }};
-    public final Map<Integer, String> mSPBufferCurrent = new HashMap<Integer, String>();
-    public final Map<Integer, String> mSPBufferHistory = new HashMap<Integer, String>();
-    public Integer wakelockNumber = 0;
+    // public final Map<Integer, String> mSPBufferCurrent = new HashMap<Integer, String>();
+    // public final Map<Integer, String> mSPBufferHistory = new HashMap<Integer, String>();
+    // public final Map<Integer, WakeLock> mSPBufferCurrent = new HashMap<Integer, WakeLock>();
+    // public final Map<Integer, WakeLock> mSPBufferHistory = new HashMap<Integer, WakeLock>();
+    // public Integer wakelockNumber = 0;
 
 
     private static final String TAG = "PowerManager";
@@ -415,17 +408,11 @@ public final class PowerManager {
     /**
      * {@hide}
      */
-/*added by Super Penguings */
+
     public PowerManager(Context context, IPowerManager service, Handler handler) {
         mContext = context;
         mService = service;
         mHandler = handler;
-/*added by Super Penguings */
-        //mSPBuffer.add("PowerManager Constructor");
-        //mSPBuffer.add("========================");
-        // mSPBufferCurrent.put(67890, "TEST1");
-        // mSPBufferHistory.put(12345, "TEST2");
-        // mSPBuffer.add("hello Penguin");
     }
 
     /**
@@ -1045,8 +1032,8 @@ public final class PowerManager {
         private String mHistoryTag;
         private final String mTraceName;
         /* SuperPenguins */
-        private long mSystemTime;
-        private int mWakelockNumber;
+        // private long mSystemTime;
+        // private int mWakelockNumber;
 
         private final Runnable mReleaser = new Runnable() {
             public void run() {
@@ -1138,32 +1125,16 @@ public final class PowerManager {
                 try {
                     mService.acquireWakeLock(mToken, mFlags, mTag, mPackageName, mWorkSource,
                             mHistoryTag);
-     
-                    /* Super Penguins */               
-                    //mSPBuffer.add("---- WAKELOCK ACQUIRE >>>>");
-                    //mSPBuffer.add("mFlags: " + mFlags + " \tmTag: " + mTag + " \tmPackageName: " + mPackageName);
-                    //mSPBuffer.add("mCount: " + mCount + " \tmRefCounted: " + mRefCounted + "\tmWorkSource: " + mWorkSource);
-                    //mSPBuffer.add("mHistoryTag: " + mHistoryTag + " \tmTraceName: " + mTraceName);
-                    // mSPBuffer.add("");
-                    // mSPBuffer.add("WAKELOCK ACQUIRED");
-                    // mSPBuffer.add("+ mTraceName: " + mTraceName);
-                    // mSPBuffer.add("mHistoryTag: " + mHistoryTag);
-                    // mSPBuffer.add("systemTime start: " + systemTime);
-                    // mSPBuffer.add("mTag: " + mTag);
-                    // // mSPBuffer.add("mFlags: " + mFlags);
-                    // // mSPBuffer.add("mCount: " + mCount);
-                    // // mSPBuffer.add("mRefCounted: " + mRefCounted);
-                    // // mSPBuffer.add("mWorkSource: " + mWorkSource);
-                    // // mSPBuffer.add("mPackageName: " + mPackageName);
-                    // mSPBuffer.add("");
-                    wakelockNumber++;
-                    mWakelockNumber = wakelockNumber;
-                    mSystemTime = System.currentTimeMillis();
-                    mSPBufferCurrent.put(mWakelockNumber,"\nWAKELOCK ACQUIRED" +
-                                                         "\nmTraceName: " + mTraceName +
-                                                         "\nmHistoryTag: " + mHistoryTag +
-                                                         "\nmTag: " + mTag +
-                                                         "\nmSystemTime Start: " + mSystemTime);
+
+                    /* Super Penguins */
+                    // wakelockNumber++;
+                    // mWakelockNumber = wakelockNumber;
+                    // mSystemTime = System.currentTimeMillis();
+                    // mSPBufferCurrent.put(mWakelockNumber,this);
+                    // mSPBufferCurrent.put(mWakelockNumber,"\nWAKELOCK ACQUIRED" +
+                    //                                      "\nmTraceName: " + mTraceName +
+                    //                                      "\nmTag: " + mTag +
+                    //                                      "\nmSystemTime Start: " + mSystemTime);
 
                 } catch(RemoteException e){
                 }
@@ -1205,22 +1176,16 @@ public final class PowerManager {
                         Trace.asyncTraceEnd(Trace.TRACE_TAG_POWER, mTraceName, 0);
                         try {
                             mService.releaseWakeLock(mToken, flags);
-                            /* Super Penguins */               
-                            //mSPBuffer.add("---- WAKELOCK RELEASE <<<<");
-                            //mSPBuffer.add("mFlags: " + mFlags + " \tmTag: " + mTag + " \tmPackageName: " + mPackageName);
-                            //mSPBuffer.add("mCount: " + mCount + " \tmRefCounted: " + mRefCounted + "\tmWorkSource: " + mWorkSource);
-                            //mSPBuffer.add("mHistoryTag: " + mHistoryTag + " \tmTraceName: " + mTraceName);
-                            long endTime  = System.currentTimeMillis();
-                            long totalTime = endTime - mSystemTime;
-                            mSPBufferCurrent.remove(mWakelockNumber);
-                            if (totalTime > 1000) {
-                                mSPBufferHistory.put(mWakelockNumber, "\nmTraceName: " + mTraceName +
-                                                      "\nmHistoryTag: " + mHistoryTag +
-                                                      "\nmTag: " + mTag +
-                                                      "\nstartTime: " + mSystemTime +
-                                                      "\nendTime: " + endTime +
-                                                      "\nTotal mSecs Active: " + totalTime);
-                            }
+                            // /* Super Penguins */
+                            // long endTime  = System.currentTimeMillis();
+                            // long totalTime = endTime - mSystemTime;
+                            // mSPBufferCurrent.remove(mWakelockNumber);
+                            // // if (totalTime > 1000) {
+                            // mSPBufferHistory.put(mWakelockNumber, this);
+                            // // mSPBufferHistory.put(mWakelockNumber, "mTraceName: " + mTraceName +
+                            // //                       "\nmTag: " + mTag +
+                            // //                       "\nTotal mSecs Active: " + totalTime);
+                            // // }
                         } catch (RemoteException e) {
                         }
                         mHeld = false;

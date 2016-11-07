@@ -92,6 +92,10 @@ import java.util.Map;      /* SuperPenguins */
  */
 public final class PowerManagerService extends SystemService
         implements Watchdog.Monitor {
+
+    public final ArrayList<WakeLock> mSPBufferCurrent = new ArrayList<WakeLock>();
+    public final ArrayList<WakeLock> mSPBufferHistory = new ArrayList<WakeLock>();
+
     private static final String TAG = "PowerManagerService";
 
     private static final boolean DEBUG = false;
@@ -818,6 +822,11 @@ public final class PowerManagerService extends SystemService
                 // stay awake.
                 notifyWakeLockAcquiredLocked(wakeLock);
             }
+            /* Super Penguins */
+            wakeLock.mStartTime = System.currentTimeMillis();
+            mSPBufferCurrent.add(wakeLock);
+            /* Super Penguins */
+
         }
     }
 
@@ -872,8 +881,16 @@ public final class PowerManagerService extends SystemService
             }
 
             wakeLock.mLock.unlinkToDeath(wakeLock, 0);
+
+            /* Super Penguins */
+            wakeLock.mTotalTime = System.currentTimeMillis() - wakeLock.mStartTime;
+            mSPBufferCurrent.remove(wakeLock);
+            mSPBufferHistory.add(wakeLock);
+            /* Super Penguins */
+
             removeWakeLockLocked(wakeLock, index);
         }
+
     }
 
     private void handleWakeLockDeath(WakeLock wakeLock) {
@@ -2740,18 +2757,8 @@ public final class PowerManagerService extends SystemService
 
 /* added by Super Penguins @hide */
     private void dumpSP(PrintWriter pw) {
-        pw.println("SUPER PINGUINS POWER MANAGER (dumpsys power SP)\n");
-
-        final WirelessChargerDetector wcd;
+        pw.println("SUPER PENGUINS POWER MANAGER (dumpsys power SP)\n");
         synchronized (mLock) {
-            final int sleepTimeout = getSleepTimeoutLocked();
-            final int screenOffTimeout = getScreenOffTimeoutLocked(sleepTimeout);
-            final int screenDimDuration = getScreenDimDurationLocked(screenOffTimeout);
-            pw.println();
-            pw.println("Sleep timeout: " + sleepTimeout + " ms");
-            pw.println("Screen off timeout: " + screenOffTimeout + " ms");
-            pw.println("Screen dim duration: " + screenDimDuration + " ms");
-
             pw.println();
             pw.println("UID states:");
             for (int i=0; i<mUidState.size(); i++) {
@@ -2775,26 +2782,25 @@ public final class PowerManagerService extends SystemService
             pw.println("Display Power: " + mDisplayPowerCallbacks);
 
             pw.println("======= Wakelocks Info =======");
-            PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-            // for (int i=0; i<pm.mSPBuffer.size(); i++)
-            //     pw.println(pm.mSPBuffer.get(i));
-            pw.println("WAKELOCKS WHICH HAVE ENDED AND WERE ACTIVE FOR 1000 MS +");
-            Iterator it = pm.mSPBufferHistory.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
-                pw.println(pair.getValue());
-                it.remove(); // avoids a ConcurrentModificationException
+
+            pw.println("PAST WAKELOCKS");
+            for (int i = 0; i < mSPBufferHistory.size(); i++) {
+                WakeLock w = mSPBufferHistory.get(i);
+                // String[] appName = PackageManager.getPackagesForUid(w.mOwnerUid);
+                String appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+                pw.println(i + " " + w.getLockLevelString() + " " + w.mTag + " " + appName + " " + w.mTotalTime);
             }
+
+            pw.println();
 
             pw.println("ACTIVE WAKELOCKS");
-            it = pm.mSPBufferCurrent.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pair = (Map.Entry)it.next();
-                pw.println(pair.getValue());
-                it.remove(); // avoids a ConcurrentModificationException
+            for (int n = 0; n < mSPBufferCurrent.size(); n++) {
+                WakeLock w2 = mSPBufferHistory.get(n);
+                // String[] appName = PackageManager.getPackagesForUid(w2.mOwnerUid);
+                String appName = mContext.getPackageManager().getNameForUid(w2.mOwnerUid);
+                pw.println(n + " " + w2.getLockLevelString() + " " + w2.mTag + " " + appName + " " + w2.mTotalTime);
             }
         }
-
     }
 
     private SuspendBlocker createSuspendBlockerLocked(String name) {
@@ -2900,6 +2906,9 @@ public final class PowerManagerService extends SystemService
         public final int mOwnerPid;
         public boolean mNotifiedAcquired;
         public boolean mDisabled;
+        /* SuperPenguins */
+        public long mStartTime;
+        public long mTotalTime;
 
         public WakeLock(IBinder lock, int flags, String tag, String packageName,
                 WorkSource workSource, String historyTag, int ownerUid, int ownerPid) {
