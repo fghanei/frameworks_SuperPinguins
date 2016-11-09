@@ -12,4 +12,5 @@ to make powerMangerService:     mmm frameworks/base/services/core
 
 to make and update:             mmma frameworks/base
 
- 
+to run emulator with SD card:   emulator -sdcard frameworks/mySdCardFile.img &
+
