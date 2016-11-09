@@ -1,0 +1,15 @@
+-----------------------
+Modifications
+
+frameworks/base/core/java/android/os/PowerManager.java
+frameworks/base/services/core/java/com/android/server/power/PowerManagerService.java
+
+-----------------------
+Handy Commands
+
+to make PowerManager:           mmm frameworks/base
+to make powerMangerService:     mmm frameworks/base/services/core
+
+to make and update:             mmma frameworks/base
+
+ 

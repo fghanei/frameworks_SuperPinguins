@@ -20,8 +20,6 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.util.Log;
-import java.util.HashMap;   /* added by Super Penguins */
-import java.util.Map;       /* added by Super Penguins */
 
 /**
  * This class gives you control of the power state of the device.
@@ -51,23 +49,23 @@ import java.util.Map;       /* added by Super Penguins */
  * <i>These levels are mutually exclusive - you may only specify one of them.</i>
  *
  * <table>
- *     <tr><th>Flag Value</th>
+ *     <tr><th>Flag Value</th> 
  *     <th>CPU</th> <th>Screen</th> <th>Keyboard</th></tr>
  *
  *     <tr><td>{@link #PARTIAL_WAKE_LOCK}</td>
- *         <td>On*</td> <td>Off</td> <td>Off</td>
+ *         <td>On*</td> <td>Off</td> <td>Off</td> 
  *     </tr>
- *
+ *     
  *     <tr><td>{@link #SCREEN_DIM_WAKE_LOCK}</td>
- *         <td>On</td> <td>Dim</td> <td>Off</td>
+ *         <td>On</td> <td>Dim</td> <td>Off</td> 
  *     </tr>
  *
  *     <tr><td>{@link #SCREEN_BRIGHT_WAKE_LOCK}</td>
- *         <td>On</td> <td>Bright</td> <td>Off</td>
+ *         <td>On</td> <td>Bright</td> <td>Off</td> 
  *     </tr>
- *
+ *     
  *     <tr><td>{@link #FULL_WAKE_LOCK}</td>
- *         <td>On</td> <td>Bright</td> <td>Bright</td>
+ *         <td>On</td> <td>Bright</td> <td>Bright</td> 
  *     </tr>
  * </table>
  * </p><p>
@@ -87,13 +85,13 @@ import java.util.Map;       /* added by Super Penguins */
  *         the illumination to remain on once it turns on (e.g. from user activity).  This flag
  *         will force the screen and/or keyboard to turn on immediately, when the WakeLock is
  *         acquired.  A typical use would be for notifications which are important for the user to
- *         see immediately.</td>
+ *         see immediately.</td> 
  *     </tr>
- *
+ *     
  *     <tr><td>{@link #ON_AFTER_RELEASE}</td>
  *         <td>If this flag is set, the user activity timer will be reset when the WakeLock is
- *         released, causing the illumination to remain on a bit longer.  This can be used to
- *         reduce flicker if you are cycling between wake lock conditions.</td>
+ *         released, causing the illumination to remain on a bit longer.  This can be used to 
+ *         reduce flicker if you are cycling between wake lock conditions.</td> 
  *     </tr>
  * </table>
  * <p>
@@ -101,16 +99,7 @@ import java.util.Map;       /* added by Super Penguins */
  * permission in an {@code &lt;uses-permission&gt;} element of the application's manifest.
  * </p>
  */
-/*added by Super Penguins */
 public final class PowerManager {
-    /*added by Super Penguins */
-    // public final Map<Integer, String> mSPBufferCurrent = new HashMap<Integer, String>();
-    // public final Map<Integer, String> mSPBufferHistory = new HashMap<Integer, String>();
-    // public final Map<Integer, WakeLock> mSPBufferCurrent = new HashMap<Integer, WakeLock>();
-    // public final Map<Integer, WakeLock> mSPBufferHistory = new HashMap<Integer, WakeLock>();
-    // public Integer wakelockNumber = 0;
-
-
     private static final String TAG = "PowerManager";
 
     /* NOTE: Wake lock levels were previously defined as a bit field, except that only a few
@@ -318,7 +307,7 @@ public final class PowerManager {
     public static final int USER_ACTIVITY_EVENT_TOUCH = 2;
 
     /**
-     /acqu* User activity flag: If already dimmed, extend the dim timeout
+     * User activity flag: If already dimmed, extend the dim timeout
      * but do not brighten.  This flag is useful for keeping the screen on
      * a little longer without causing a visible change such as when
      * the power key is pressed.
@@ -398,7 +387,7 @@ public final class PowerManager {
      * @hide
      */
     public static final String REBOOT_RECOVERY = "recovery";
-
+    
     final Context mContext;
     final IPowerManager mService;
     final Handler mHandler;
@@ -408,7 +397,6 @@ public final class PowerManager {
     /**
      * {@hide}
      */
-
     public PowerManager(Context context, IPowerManager service, Handler handler) {
         mContext = context;
         mService = service;
@@ -1031,9 +1019,6 @@ public final class PowerManager {
         private WorkSource mWorkSource;
         private String mHistoryTag;
         private final String mTraceName;
-        /* SuperPenguins */
-        // private long mSystemTime;
-        // private int mWakelockNumber;
 
         private final Runnable mReleaser = new Runnable() {
             public void run() {
@@ -1125,24 +1110,11 @@ public final class PowerManager {
                 try {
                     mService.acquireWakeLock(mToken, mFlags, mTag, mPackageName, mWorkSource,
                             mHistoryTag);
-
-                    /* Super Penguins */
-                    // wakelockNumber++;
-                    // mWakelockNumber = wakelockNumber;
-                    // mSystemTime = System.currentTimeMillis();
-                    // mSPBufferCurrent.put(mWakelockNumber,this);
-                    // mSPBufferCurrent.put(mWakelockNumber,"\nWAKELOCK ACQUIRED" +
-                    //                                      "\nmTraceName: " + mTraceName +
-                    //                                      "\nmTag: " + mTag +
-                    //                                      "\nmSystemTime Start: " + mSystemTime);
-
-                } catch(RemoteException e){
+                } catch (RemoteException e) {
                 }
-                    mHeld = true;
-                    // mSPBuffer.add("mHeld: "+mHeld);
-          }
-
-      }
+                mHeld = true;
+            }
+        }
 
         /**
          * Releases the wake lock.
@@ -1176,16 +1148,6 @@ public final class PowerManager {
                         Trace.asyncTraceEnd(Trace.TRACE_TAG_POWER, mTraceName, 0);
                         try {
                             mService.releaseWakeLock(mToken, flags);
-                            // /* Super Penguins */
-                            // long endTime  = System.currentTimeMillis();
-                            // long totalTime = endTime - mSystemTime;
-                            // mSPBufferCurrent.remove(mWakelockNumber);
-                            // // if (totalTime > 1000) {
-                            // mSPBufferHistory.put(mWakelockNumber, this);
-                            // // mSPBufferHistory.put(mWakelockNumber, "mTraceName: " + mTraceName +
-                            // //                       "\nmTag: " + mTag +
-                            // //                       "\nTotal mSecs Active: " + totalTime);
-                            // // }
                         } catch (RemoteException e) {
                         }
                         mHeld = false;

@@ -2595,5 +2595,3 @@ class AlarmManagerService extends SystemService {
         }
     }
 }
-
-

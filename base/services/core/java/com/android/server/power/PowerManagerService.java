@@ -82,9 +82,12 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 
-import java.util.Iterator; /* SuperPenguins */
-import java.util.HashMap;  /* SuperPenguins */
-import java.util.Map;      /* SuperPenguins */
+/* Super Penguins */
+import java.util.Iterator;
+import java.util.HashMap; 
+import java.util.Map;     
+import java.io.*;
+
 
 /**
  * The power manager service is responsible for coordinating power management
@@ -93,6 +96,7 @@ import java.util.Map;      /* SuperPenguins */
 public final class PowerManagerService extends SystemService
         implements Watchdog.Monitor {
 
+    /* Super Penguins */
     public final ArrayList<WakeLock> mSPBufferCurrent = new ArrayList<WakeLock>();
     public final ArrayList<WakeLock> mSPBufferHistory = new ArrayList<WakeLock>();
 
@@ -821,12 +825,12 @@ public final class PowerManagerService extends SystemService
                 // stats and when we actually get around to telling the kernel to
                 // stay awake.
                 notifyWakeLockAcquiredLocked(wakeLock);
-            }
-            /* Super Penguins */
-            wakeLock.mStartTime = System.currentTimeMillis();
-            mSPBufferCurrent.add(wakeLock);
-            /* Super Penguins */
 
+                /* Super Penguins */
+//                wakeLock.mStartTime = System.currentTimeMillis();
+                mSPBufferCurrent.add(wakeLock);
+                /* Super Penguins */
+            }
         }
     }
 
@@ -883,10 +887,10 @@ public final class PowerManagerService extends SystemService
             wakeLock.mLock.unlinkToDeath(wakeLock, 0);
 
             /* Super Penguins */
-            wakeLock.mTotalTime = System.currentTimeMillis() - wakeLock.mStartTime;
+//            wakeLock.mTotalTime = System.currentTimeMillis() - wakeLock.mStartTime;
+            wakeLock.updateTime();
             mSPBufferCurrent.remove(wakeLock);
             mSPBufferHistory.add(wakeLock);
-            /* Super Penguins */
 
             removeWakeLockLocked(wakeLock, index);
         }
@@ -2759,46 +2763,47 @@ public final class PowerManagerService extends SystemService
     private void dumpSP(PrintWriter pw) {
         pw.println("SUPER PENGUINS POWER MANAGER (dumpsys power SP)\n");
         synchronized (mLock) {
-            pw.println();
-            pw.println("UID states:");
-            for (int i=0; i<mUidState.size(); i++) {
-                pw.print("  UID "); UserHandle.formatUid(pw, mUidState.keyAt(i));
-                pw.print(": "); pw.println(mUidState.valueAt(i));
-            }
-
-            pw.println();
-            pw.println("Wake Locks: size=" + mWakeLocks.size());
-            for (WakeLock wl : mWakeLocks) {
-                pw.println("  " + wl);
-            }
-
-            pw.println();
-            pw.println("Suspend Blockers: size=" + mSuspendBlockers.size());
-            for (SuspendBlocker sb : mSuspendBlockers) {
-                pw.println("  " + sb);
-            }
-
-            pw.println();
-            pw.println("Display Power: " + mDisplayPowerCallbacks);
-
             pw.println("======= Wakelocks Info =======");
 
             pw.println("PAST WAKELOCKS");
+            pw.print(padRight("Num",4));
+            pw.print(padRight("Type",30));
+            pw.print(padRight("Wakelock Name",30));
+            pw.print(padRight("Package Name",30));
+            pw.println(padRight("mSecs",6));
             for (int i = 0; i < mSPBufferHistory.size(); i++) {
                 WakeLock w = mSPBufferHistory.get(i);
-                // String[] appName = PackageManager.getPackagesForUid(w.mOwnerUid);
                 String appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
-                pw.println(i + " " + w.getLockLevelString() + " " + w.mTag + " " + appName + " " + w.mTotalTime);
+                pw.print(padRight("" + i,4));
+                pw.print(padRight(w.getLockLevelString(),30));
+                pw.print(padRight("" + w.mTag,30));
+                pw.print(padRight(appName,30));
+                pw.println(padRight("" + w.mTotalTime,6)); //WakeLock is has been released, this is  how long it was active
             }
 
             pw.println();
 
             pw.println("ACTIVE WAKELOCKS");
+            pw.print(padRight("Num",4));
+            pw.print(padRight("Type",30));
+            pw.print(padRight("Wakelock Name",30));
+            pw.print(padRight("Package Name",30));
+            pw.println(padRight("mSecs",6));
+            pw.println(padRight("mCPUs",6));
+            long mTmpTime;
+            long mTmpCPUTime;
             for (int n = 0; n < mSPBufferCurrent.size(); n++) {
-                WakeLock w2 = mSPBufferHistory.get(n);
-                // String[] appName = PackageManager.getPackagesForUid(w2.mOwnerUid);
+                WakeLock w2 = mSPBufferCurrent.get(n);
                 String appName = mContext.getPackageManager().getNameForUid(w2.mOwnerUid);
-                pw.println(n + " " + w2.getLockLevelString() + " " + w2.mTag + " " + appName + " " + w2.mTotalTime);
+                mTmpTime = w2.mTotalTime;
+                mTmpCPUTime = w2.mTotalCPUTime;
+                w2.updateTime();
+		pw.print(padRight("" + n,4));
+                pw.print(padRight(w2.getLockLevelString(),30));
+                pw.print(padRight("" + w2.mTag,30));
+                pw.print(padRight(appName,30));
+                pw.println(padRight("" + w2.mTotalTime,6)); //WakeLock is still active, this is just how long it has been active
+                pw.println(padRight("" + 100*(w2.mTotalCPUTime - mTmpCPUTime)/(w2.mTotalTime - mTmpTime), 6));
             }
         }
     }
@@ -2909,6 +2914,8 @@ public final class PowerManagerService extends SystemService
         /* SuperPenguins */
         public long mStartTime;
         public long mTotalTime;
+        public long mStartCPUTime;
+        public long mTotalCPUTime;
 
         public WakeLock(IBinder lock, int flags, String tag, String packageName,
                 WorkSource workSource, String historyTag, int ownerUid, int ownerPid) {
@@ -2920,7 +2927,25 @@ public final class PowerManagerService extends SystemService
             mHistoryTag = historyTag;
             mOwnerUid = ownerUid;
             mOwnerPid = ownerPid;
+            /* Super Penguins */
+            updateTime();
+            mStartTime = mTotalTime;
+            mStartCPUTime = mTotalCPUTime;            
         }
+        /* Super Penguins */
+        /* @hide */
+        public void updateTime() {
+            try {
+                RandomAccessFile reader = new RandomAccessFile("/proc/"+mOwnerPid+"/stat","r");
+                String[] toks = reader.readLine().split(" ");
+                mTotalCPUTime = Long.parseLong(toks[13]) + Long.parseLong(toks[14]) + Long.parseLong(toks[15]) + Long.parseLong(toks[16]); 
+                mTotalCPUTime *= 10; //this basically is the scale from CPU jiffy to millisecon
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            mTotalTime = System.currentTimeMillis() - mStartTime;
+        }
+        
 
         @Override
         public void binderDied() {
