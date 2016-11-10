@@ -2773,6 +2773,12 @@ public final class PowerManagerService extends SystemService
     private void dumpSP(PrintWriter pw) {
         pw.println("SUPER PENGUINS POWER MANAGER (dumpsys power SP)\n");
         synchronized (mLock) {
+            long mTmpTime;
+            long mTmpCPUTime;
+            String appName;
+            WakeLock w;
+            long dividend;
+
             pw.println("======= Wakelocks Info =======");
 
             pw.println("PAST WAKELOCKS");
@@ -2780,22 +2786,21 @@ public final class PowerManagerService extends SystemService
             pw.print(padRight("Type",30));
             pw.print(padRight("Wakelock Name",65));
             pw.print(padRight("Package Name",30));
-            pw.print(padRight("mSecs",7));
-            pw.println(padRight("mCPUs",7));
-            long mTmpTime;
-            long mTmpCPUTime;
+            pw.print(padRight("PID",6));
+            pw.print(padRight("mSecs",8));
+            pw.println(padRight("mCPUs",8));
             for (int i = 0; i < mSPBufferHistory.size(); i++) {
-                WakeLock w = mSPBufferHistory.get(i);
-                String appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+                w = mSPBufferHistory.get(i);
+                appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
                 mTmpTime = w.mTotalTime;
                 mTmpCPUTime = w.mTotalCPUTime;
-                w.updateTime();
                 pw.print(padRight("" + i,4));
                 pw.print(padRight(w.getLockLevelString(),30));
                 pw.print(padRight(w.mTag,65));
                 pw.print(padRight(appName,30));
-                pw.print(padRight("" + w.mTotalTime,7)); //WakeLock is has been released, this is  how long it was active
-                pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 6));
+                pw.print(padRight("" + w.mOwnerPid,6));
+                pw.print(padRight("" + w.mTotalTime,8)); //WakeLock is has been released, this is  how long it was active
+                pw.println(padRight("" + w.mTotalCPUTime, 8));
             }
 
             pw.println();
@@ -2805,22 +2810,29 @@ public final class PowerManagerService extends SystemService
             pw.print(padRight("Type",30));
             pw.print(padRight("Wakelock Name",65));
             pw.print(padRight("Package Name",30));
-            pw.print(padRight("mSecs",6));
-            pw.println(padRight("mCPUs",7));
-            // long mTmpTime;
-            // long mTmpCPUTime;
-            for (int n = 0; n < mSPBufferCurrent.size(); n++) {
-                WakeLock w2 = mSPBufferCurrent.get(n);
-                String appName = mContext.getPackageManager().getNameForUid(w2.mOwnerUid);
-                mTmpTime = w2.mTotalTime;
-                mTmpCPUTime = w2.mTotalCPUTime;
-                w2.updateTime();
-        		pw.print(padRight("" + n,4));
-                pw.print(padRight(w2.getLockLevelString(),30));
-                pw.print(padRight(w2.mTag,65));
+            pw.print(padRight("PID",6));
+            pw.print(padRight("mSecs",8));
+            pw.print(padRight("mCPUs",8));
+            pw.println(padRight("usage%", 8));
+            for (int i = 0; i < mSPBufferCurrent.size(); i++) {
+                w = mSPBufferCurrent.get(i);
+                appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+                mTmpTime = w.mTotalTime;
+                mTmpCPUTime = w.mTotalCPUTime;
+                w.updateTime();
+        	pw.print(padRight("" + i,4));
+                pw.print(padRight(w.getLockLevelString(),30));
+                pw.print(padRight(w.mTag,65));
                 pw.print(padRight(appName,30));
-                pw.print(padRight("" + w2.mTotalTime,7)); //WakeLock is still active, this is just how long it has been active
-                pw.println(padRight("" + 100*(w2.mTotalCPUTime - mTmpCPUTime)/(w2.mTotalTime - mTmpTime), 6));
+                pw.print(padRight("" + w.mOwnerPid,6));
+                pw.print(padRight("" + w.mTotalTime,8)); //WakeLock is still active, this is just how long it has been active
+                pw.print(padRight("" + w.mTotalCPUTime, 8));
+                dividend = w.mTotalTime - mTmpTime;
+                if (dividend != 0 && w.mTotalCPUTime != 0)
+                    pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 8));
+                else
+                    pw.println(padRight("N/A", 8));
+                    
             }
         }
     }
@@ -2957,13 +2969,17 @@ public final class PowerManagerService extends SystemService
         /* Super Penguins */
         /* @hide */
         public void updateTime() {
-            try {
-                RandomAccessFile reader = new RandomAccessFile("/proc/"+mOwnerPid+"/stat","r");
-                String[] toks = reader.readLine().split(" ");
-                mTotalCPUTime = Long.parseLong(toks[13]) + Long.parseLong(toks[14]) + Long.parseLong(toks[15]) + Long.parseLong(toks[16]);
-                mTotalCPUTime *= 10; //this basically is the scale from CPU jiffy to millisecon
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            if (mOwnerPid != 0) {
+                try {
+                    RandomAccessFile reader = new RandomAccessFile("/proc/"+mOwnerPid+"/stat","r");
+                    String[] toks = reader.readLine().split(" ");
+                    mTotalCPUTime = Long.parseLong(toks[13]) + Long.parseLong(toks[14]) + Long.parseLong(toks[15]) + Long.parseLong(toks[16]);
+                    mTotalCPUTime *= 10; //this basically is the scale from CPU jiffy to millisecon
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            } else { 
+                mTotalCPUTime = 0;
             }
             mTotalTime = System.currentTimeMillis() - mStartTime;
         }
