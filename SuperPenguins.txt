@@ -7,10 +7,10 @@ frameworks/base/services/core/java/com/android/server/power/PowerManagerService.
 -----------------------
 Handy Commands
 
-to make PowerManager:           mmm frameworks/base
-to make powerMangerService:     mmm frameworks/base/services/core
+to check PowerManager for syntax:           mmm frameworks/base
+to check powerMangerService for syntax:     mmm frameworks/base/services/core
 
-to make and update:             mmma frameworks/base
+to make and update:                         mmma frameworks/base
 
 to run emulator with SD card:   emulator -sdcard frameworks/mySdCardFile.img &
 
