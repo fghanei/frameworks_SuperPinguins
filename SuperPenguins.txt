@@ -11,7 +11,7 @@ to check PowerManager for syntax:           mmm frameworks/base
 to check powerMangerService for syntax:     mmm frameworks/base/services/core
 
 to make and update:                         mmma frameworks/base
-to update in emulator:                      adb remount; adb sync; adb shell stop; adb shell start
+to update in emulator:                      adb remount; adb shell stop; adb sync; adb shell start
 
 
 to run emulator with SD card:   emulator -sdcard frameworks/mySdCardFile.img &
