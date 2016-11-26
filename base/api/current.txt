@@ -23411,6 +23411,8 @@ package android.os {
   }
 
   public final class PowerManager {
+    method public java.util.List<java.lang.String> SPLoad();
+    method public boolean SPSave(java.util.List<java.lang.String>);
     method public boolean isDeviceIdleMode();
     method public boolean isIgnoringBatteryOptimizations(java.lang.String);
     method public boolean isInteractive();

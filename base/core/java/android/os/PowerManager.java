@@ -20,6 +20,13 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.util.Log;
+import android.util.Slog;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.io.*;
+
+
 
 /**
  * This class gives you control of the power state of the device.
@@ -100,6 +107,9 @@ import android.util.Log;
  * </p>
  */
 public final class PowerManager {
+    /* Super Penguins */
+    static String SP_CONFIG_FILE = "/data/system/SP.config";
+
     private static final String TAG = "PowerManager";
 
     /* NOTE: Wake lock levels were previously defined as a bit field, except that only a few
@@ -1234,5 +1244,50 @@ public final class PowerManager {
                     + " held=" + mHeld + ", refCount=" + mCount + "}";
             }
         }
+    }
+
+    /* Super Penguins*/
+    public boolean SPSave(List<String> inputConfig) {
+        boolean result = false; 
+        try {
+            File dumpFile = new File(SP_CONFIG_FILE);
+            if (dumpFile.exists()) {
+                dumpFile.delete();
+                Slog.i("SP", "previous config file deleted.");
+            }
+            dumpFile.createNewFile();
+            FileWriter fw = new FileWriter(dumpFile.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            Slog.i("SP", "file created for saving config");
+            bw.write("#this file is for user defined actions on applications using wakelocks. created @" + System.currentTimeMillis());
+            bw.newLine();
+            for(String data: inputConfig) {
+                bw.write(data);
+                bw.newLine();
+            }
+            bw.close();
+            result = true;
+        } catch (Exception e) {
+            Slog.e("SP" ,"SAVE method failed.");
+        }
+        return result;
+    }
+
+    /* Super Penguins*/
+    public List<String> SPLoad() {
+        List<String> data = new ArrayList<String>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(SP_CONFIG_FILE));
+            Slog.i("SP" ,"LOAD file opened.");
+            String line = br.readLine(); //skipping header
+            while ((line=br.readLine()) != null) {
+                data.add(line);
+            }
+            br.close();
+            Slog.i("SP" ,"LOAD succeeded.");
+        } catch (Exception e) {
+            Slog.e("SP" ,"LOAD method failed.");
+        }
+        return data;
     }
 }

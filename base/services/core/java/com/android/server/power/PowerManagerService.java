@@ -72,6 +72,7 @@ import android.view.WindowManagerPolicy;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 
 import libcore.util.Objects;
@@ -97,9 +98,9 @@ public final class PowerManagerService extends SystemService
         implements Watchdog.Monitor {
 
     /* Super Penguins */
-    public final ArrayList<WakeLock> mSPBufferCurrent = new ArrayList<WakeLock>();
-    public final ArrayList<WakeLock> mSPBufferHistory = new ArrayList<WakeLock>();
-    public final int SPThreshold = 20; //TODO this has to be tuned
+    public static final ArrayList<WakeLock> mSPBufferCurrent = new ArrayList<WakeLock>();
+    public static final ArrayList<WakeLock> mSPBufferHistory = new ArrayList<WakeLock>();
+    public static final int SPThreshold = 20; //TODO this has to be tuned
 
     private static final String TAG = "PowerManagerService";
 
@@ -2778,6 +2779,14 @@ public final class PowerManagerService extends SystemService
             WakeLock w;
             long dividend;
 
+/*
+            List<String> tmp = new ArrayList<String>();
+            tmp.add("Hello");
+            tmp.add("Bye");
+            PowerManager pm2 = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            pm2.SPSave(tmp);
+*/
+
             pw.println("======= ACTIVE WAKELOCKS =======");
             pw.print(padRight("Num",4));
             pw.print(padRight("Type",30));
@@ -2818,6 +2827,15 @@ public final class PowerManagerService extends SystemService
             String appName;
             WakeLock w;
             long dividend;
+
+/*
+            List<String> tmp;
+            PowerManager pm2 = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            tmp=pm2.SPLoad();
+            for (String line:tmp){
+                pw.println(line);
+            }
+*/
 
             pw.println("======= PAST WAKELOCKS =======");
             pw.print(padRight("Num",4));
@@ -3627,7 +3645,7 @@ public final class PowerManagerService extends SystemService
 
             final long ident = Binder.clearCallingIdentity();
             try {
-                if (args[0] == "") {
+                if (args == null || args.length == 0) {
                     dumpInternal(pw);
                 } else if (args[0].equals("SPA")) {
                     dumpSPA(pw);
