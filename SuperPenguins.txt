@@ -14,7 +14,11 @@ to make and update:                         mmma frameworks/base
 to update in emulator:                      adb remount; adb shell stop; adb sync; adb shell start
 
 
-to run emulator with SD card:   emulator -sdcard frameworks/mySdCardFile.img &
+to run emulator with SD card:               emulator -sdcard frameworks/mySdCardFile.img &
+
+
+to make the Setttings app:                  mmma packages/apps/Settings/ -j6
+
 
 
 ---changes made to
