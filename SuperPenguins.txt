@@ -4,37 +4,40 @@ Modifications
 frameworks/base/core/java/android/os/PowerManager.java
 frameworks/base/services/core/java/com/android/server/power/PowerManagerService.java
 
+packages/apps/Settings/
+    AndroidManifest.xml
+    proguard.flags
+    src/com/android/settings/Settings.java
+    res/values/strings.xml
+    res/drawable-mdpi/ic_settings_wakelocks_alpha.png
+    res/drawable/ic_settings_wakelocks_alpha.png
+    res/drawable/ic_settings_wakelocks.xml
+    res/layout/wakelocks_activity_main.xml
+    res/layout/wakelocks_simplerow.xml
+    res/xml/wakelocks_settings.xml
+    res/xml/dashboard_categories.xml
+    src/com/android/settings/wakelocks*
+    src/com/android/settings/InstrumentedFragment.java
+
 -----------------------
 Handy Commands
+-----------------------
 
-to check PowerManager for syntax:           mmm frameworks/base
-to check powerMangerService for syntax:     mmm frameworks/base/services/core
+to run emulator with SD card:           emulator -sdcard frameworks/mySdCardFile.img &
 
-to make and update:                         mmma frameworks/base
-to update in emulator:                      adb remount; adb shell stop; adb sync; adb shell start
+---------
+check for syntax only:
 
+to check PowerManager:                  mmm frameworks/base -j4
 
-to run emulator with SD card:               emulator -sdcard frameworks/mySdCardFile.img &
+to check powerMangerService:            mmm frameworks/base/services/core -j4
 
+to check Settings app:                  mmm packages/apps/Settings/ -j4
 
-to make the Setttings app:                  mmma packages/apps/Settings/ -j6
+---------
+make and update:
 
+to make framework and update:           mmma frameworks/base -j6; adb remount; adb shell stop; adb sync; adb shell start
 
-
----changes made to
-packages/apps/Settings/
-
-AndroidManifest.xml
-proguard.flags
-src/com/android/settings/Settings.java
-res/values/strings.xml
-res/drawable-mdpi/ic_settings_wakelocks_alpha.png
-res/drawable/ic_settings_wakelocks_alpha.png
-res/drawable/ic_settings_wakelocks.xml
-res/layout/wakelocks_activity_main.xml
-res/layout/wakelocks_simplerow.xml
-res/xml/wakelocks_settings.xml
-res/xml/dashboard_categories.xml
-src/com/android/settings/wakelocks*
-src/com/android/settings/InstrumentedFragment.java
+to make Setttings app and update:       mmma packages/apps/Settings/ -j6; adb remount; adb shell stop; adb sync; adb shell start
 
