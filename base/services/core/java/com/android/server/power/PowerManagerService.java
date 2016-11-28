@@ -2802,18 +2802,18 @@ public final class PowerManagerService extends SystemService
                 mTmpTime = w.mTotalTime;
                 mTmpCPUTime = w.mTotalCPUTime;
                 w.updateTime();
-        	pw.print(padRight("" + i,4));
-                pw.print(padRight(w.getLockLevelString(),30));
-                pw.print(padRight(w.mTag,65));
-                pw.print(padRight(appName,30));
-                pw.print(padRight("" + w.mOwnerPid,6));
-                pw.print(padRight("" + w.mTotalTime,8)); //WakeLock is still active, this is just how long it has been active
-                pw.print(padRight("" + w.mTotalCPUTime, 8));
+        	pw.print(padRight("" + i,20));
+                pw.print(padRight(w.getLockLevelString(),100));
+                pw.print(padRight(w.mTag,100));
+                pw.print(padRight(appName,100));
+                pw.print(padRight("" + w.mOwnerPid,20));
+                pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is still active, this is just how long it has been active
+                pw.print(padRight("" + w.mTotalCPUTime, 20));
                 dividend = w.mTotalTime - mTmpTime;
                 if (dividend != 0 && w.mTotalCPUTime != 0)
-                    pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 8));
+                    pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 20));
                 else
-                    pw.println(padRight("N/A", 8));
+                    pw.println(padRight("N/A", 20));
 
             }
         }
@@ -2850,13 +2850,13 @@ public final class PowerManagerService extends SystemService
                 appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
                 mTmpTime = w.mTotalTime;
                 mTmpCPUTime = w.mTotalCPUTime;
-                pw.print(padRight("" + i,4));
-                pw.print(padRight(w.getLockLevelString(),30));
-                pw.print(padRight(w.mTag,65));
-                pw.print(padRight(appName,30));
-                pw.print(padRight("" + w.mOwnerPid,6));
-                pw.print(padRight("" + w.mTotalTime,8)); //WakeLock is has been released, this is  how long it was active
-                pw.println(padRight("" + w.mTotalCPUTime, 8));
+                pw.print(padRight("" + i,20));
+                pw.print(padRight(w.getLockLevelString(),100));
+                pw.print(padRight(w.mTag,100));
+                pw.print(padRight(appName,100));
+                pw.print(padRight("" + w.mOwnerPid,20));
+                pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is has been released, this is  how long it was active
+                pw.println(padRight("" + w.mTotalCPUTime, 20));
             }
         }
     }
@@ -2885,19 +2885,19 @@ public final class PowerManagerService extends SystemService
                 mTmpTime = w.mTotalTime;
                 mTmpCPUTime = w.mTotalCPUTime;
                 w.updateTime();
-        	pw.print(padRight("" + i,4));
-                pw.print(padRight(w.getLockLevelString(),30));
-                pw.print(padRight(w.mTag,65));
-                pw.print(padRight(appName,30));
-                pw.print(padRight("" + w.mOwnerPid,6));
-                pw.print(padRight("" + w.mTotalTime,8)); //WakeLock is still active, this is just how long it has been active
-                pw.print(padRight("" + w.mTotalCPUTime, 8));
+        	pw.print(padRight("" + i,20));
+                pw.print(padRight(w.getLockLevelString(),100));
+                pw.print(padRight(w.mTag,100));
+                pw.print(padRight(appName,100));
+                pw.print(padRight("" + w.mOwnerPid,20));
+                pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is still active, this is just how long it has been active
+                pw.print(padRight("" + w.mTotalCPUTime, 20));
                 dividend = w.mTotalTime - mTmpTime;
                 if (dividend != 0 && w.mTotalCPUTime != 0) {
                     if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold)
-                        pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 8));
+                        pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 20));
                 } else {
-                    pw.println(padRight("N/A", 8));
+                    pw.println(padRight("N/A", 20));
                 }
             }
         }
