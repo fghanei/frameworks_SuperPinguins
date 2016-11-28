@@ -2787,15 +2787,15 @@ public final class PowerManagerService extends SystemService
             pm2.SPSave(tmp);
 */
 
-            pw.println("======= ACTIVE WAKELOCKS =======");
-            pw.print(padRight("Num",4));
-            pw.print(padRight("Type",30));
-            pw.print(padRight("Wakelock Name",65));
-            pw.print(padRight("Package Name",30));
-            pw.print(padRight("PID",6));
-            pw.print(padRight("mSecs",8));
-            pw.print(padRight("mCPUs",8));
-            pw.println(padRight("usage%", 8));
+            // pw.println("======= ACTIVE WAKELOCKS =======");
+            // pw.print(padRight("Num",4));
+            // pw.print(padRight("Type",30));
+            // pw.print(padRight("Wakelock Name",65));
+            // pw.print(padRight("Package Name",30));
+            // pw.print(padRight("PID",6));
+            // pw.print(padRight("mSecs",8));
+            // pw.print(padRight("mCPUs",8));
+            // pw.println(padRight("usage%", 8));
             for (int i = 0; i < mSPBufferCurrent.size(); i++) {
                 w = mSPBufferCurrent.get(i);
                 appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
@@ -2814,7 +2814,7 @@ public final class PowerManagerService extends SystemService
                     pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 8));
                 else
                     pw.println(padRight("N/A", 8));
-                    
+
             }
         }
     }
@@ -2837,14 +2837,14 @@ public final class PowerManagerService extends SystemService
             }
 */
 
-            pw.println("======= PAST WAKELOCKS =======");
-            pw.print(padRight("Num",4));
-            pw.print(padRight("Type",30));
-            pw.print(padRight("Wakelock Name",65));
-            pw.print(padRight("Package Name",30));
-            pw.print(padRight("PID",6));
-            pw.print(padRight("mSecs",8));
-            pw.println(padRight("mCPUs",8));
+            // pw.println("======= PAST WAKELOCKS =======");
+            // pw.print(padRight("Num",4));
+            // pw.print(padRight("Type",30));
+            // pw.print(padRight("Wakelock Name",65));
+            // pw.print(padRight("Package Name",30));
+            // pw.print(padRight("PID",6));
+            // pw.print(padRight("mSecs",8));
+            // pw.println(padRight("mCPUs",8));
             for (int i = 0; i < mSPBufferHistory.size(); i++) {
                 w = mSPBufferHistory.get(i);
                 appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
@@ -2870,15 +2870,15 @@ public final class PowerManagerService extends SystemService
             WakeLock w;
             long dividend;
 
-            pw.println("======= FAULTY WAKELOCKS =======");
-            pw.print(padRight("Num",4));
-            pw.print(padRight("Type",30));
-            pw.print(padRight("Wakelock Name",65));
-            pw.print(padRight("Package Name",30));
-            pw.print(padRight("PID",6));
-            pw.print(padRight("mSecs",8));
-            pw.print(padRight("mCPUs",8));
-            pw.println(padRight("usage%", 8));
+            // pw.println("======= FAULTY WAKELOCKS =======");
+            // pw.print(padRight("Num",4));
+            // pw.print(padRight("Type",30));
+            // pw.print(padRight("Wakelock Name",65));
+            // pw.print(padRight("Package Name",30));
+            // pw.print(padRight("PID",6));
+            // pw.print(padRight("mSecs",8));
+            // pw.print(padRight("mCPUs",8));
+            // pw.println(padRight("usage%", 8));
             for (int i = 0; i < mSPBufferCurrent.size(); i++) {
                 w = mSPBufferCurrent.get(i);
                 appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
@@ -2898,7 +2898,7 @@ public final class PowerManagerService extends SystemService
                         pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 8));
                 } else {
                     pw.println(padRight("N/A", 8));
-                }                    
+                }
             }
         }
     }
@@ -3053,7 +3053,7 @@ public final class PowerManagerService extends SystemService
                         }
                     }
                 }
-            } else { 
+            } else {
                 mTotalCPUTime = 0;
             }
             mTotalTime = System.currentTimeMillis() - mStartTime;
