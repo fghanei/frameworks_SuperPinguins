@@ -1248,7 +1248,8 @@ public final class PowerManager {
 
     /* Super Penguins*/
     public boolean SPSave(List<String> inputConfig) {
-        boolean result = false; 
+        boolean result = false;
+        BufferedWriter bw = null;
         try {
             File dumpFile = new File(SP_CONFIG_FILE);
             if (dumpFile.exists()) {
@@ -1257,7 +1258,7 @@ public final class PowerManager {
             }
             dumpFile.createNewFile();
             FileWriter fw = new FileWriter(dumpFile.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
+            bw = new BufferedWriter(fw);
             Slog.i("SP", "file created for saving config");
             bw.write("#this file is for user defined actions on applications using wakelocks. created @" + System.currentTimeMillis());
             bw.newLine();
@@ -1265,10 +1266,17 @@ public final class PowerManager {
                 bw.write(data);
                 bw.newLine();
             }
-            bw.close();
             result = true;
         } catch (Exception e) {
             Slog.e("SP" ,"SAVE method failed.");
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return result;
     }
@@ -1276,17 +1284,25 @@ public final class PowerManager {
     /* Super Penguins*/
     public List<String> SPLoad() {
         List<String> data = new ArrayList<String>();
+        BufferedReader br = null;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(SP_CONFIG_FILE));
+            br = new BufferedReader(new FileReader(SP_CONFIG_FILE));
             Slog.i("SP" ,"LOAD file opened.");
             String line = br.readLine(); //skipping header
             while ((line=br.readLine()) != null) {
                 data.add(line);
             }
-            br.close();
             Slog.i("SP" ,"LOAD succeeded.");
         } catch (Exception e) {
             Slog.e("SP" ,"LOAD method failed.");
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return data;
     }

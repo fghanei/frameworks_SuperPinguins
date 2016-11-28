@@ -17,7 +17,7 @@ to update in emulator:                      adb remount; adb shell stop; adb syn
 to run emulator with SD card:   emulator -sdcard frameworks/mySdCardFile.img &
 
 
----uncomment after make
+---changes made to
 packages/apps/Settings/
 
 AndroidManifest.xml

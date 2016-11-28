@@ -3032,17 +3032,26 @@ public final class PowerManagerService extends SystemService
             mStartTime = mTotalTime;
             mStartCPUTime = mTotalCPUTime;
         }
+
         /* Super Penguins */
-        /* @hide */
         public void updateTime() {
+            RandomAccessFile reader = null;
             if (mOwnerPid != 0) {
                 try {
-                    RandomAccessFile reader = new RandomAccessFile("/proc/"+mOwnerPid+"/stat","r");
+                    reader = new RandomAccessFile("/proc/"+mOwnerPid+"/stat","r");
                     String[] toks = reader.readLine().split(" ");
                     mTotalCPUTime = Long.parseLong(toks[13]) + Long.parseLong(toks[14]) + Long.parseLong(toks[15]) + Long.parseLong(toks[16]);
                     mTotalCPUTime *= 10; //this basically is the scale from CPU jiffy to millisecon
                 } catch (IOException ex) {
                     ex.printStackTrace();
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             } else { 
                 mTotalCPUTime = 0;
