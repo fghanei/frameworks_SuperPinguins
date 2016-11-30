@@ -829,11 +829,9 @@ public final class PowerManagerService extends SystemService
                 notifyWakeLockAcquiredLocked(wakeLock);
 
                 /* Super Penguins */
-//                wakeLock.mStartTime = System.currentTimeMillis();
                 if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
                     mSPBufferCurrent.add(wakeLock);
                 }
-                /* Super Penguins */
             }
         }
     }
@@ -891,12 +889,12 @@ public final class PowerManagerService extends SystemService
             wakeLock.mLock.unlinkToDeath(wakeLock, 0);
 
             /* Super Penguins */
-//            wakeLock.mTotalTime = System.currentTimeMillis() - wakeLock.mStartTime;
             wakeLock.updateTime();
             mSPBufferCurrent.remove(wakeLock);
             if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
                 mSPBufferHistory.add(wakeLock);
             }
+
             removeWakeLockLocked(wakeLock, index);
         }
 
@@ -2765,13 +2763,73 @@ public final class PowerManagerService extends SystemService
     }
 
 /* added by Super Penguins @hide */
-    private void dumpClear(PrintWriter pw) {
-        mSPBufferHistory.clear();
-        mSPBufferCurrent.clear();       //TODO should we clear Current list too?
+    protected void SPRelease(String packageName, BinderService mBinder) {
+        synchronized (mLock) {
+            for (int i=0; i < mSPBufferCurrent.size(); i++) {
+                WakeLock wl = mSPBufferCurrent.get(i);
+                if (packageName.equals("all") || wl.mPackageName.equals(packageName)) {
+                    mBinder.releaseWakeLock(wl.mLock, 0);
+                    i--;
+                }
+            }            
+        }
     }
 
 /* added by Super Penguins @hide */
-    private void dumpSPA(PrintWriter pw) {
+    protected void validateSPBuffer() {
+        synchronized (mLock) {
+            for (int i=0; i < mSPBufferCurrent.size(); i++) {
+                WakeLock wl = mSPBufferCurrent.get(i);
+                if (findWakeLockIndexLocked(wl.mLock) < 0) {
+                    mSPBufferCurrent.remove(i);
+                    i--;
+                }
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPClear(PrintWriter pw) {
+        synchronized (mLock) {
+            mSPBufferHistory.clear();
+            mSPBufferCurrent.clear();       //TODO should we clear Current list too?
+        }
+    }
+
+
+/* added by Super Penguins @hide */
+    protected void dumpSP(PrintWriter pw, String[] args, BinderService mBinder) {
+        synchronized (mLock) {
+            if (args.length>1) {
+                switch (args[1]) {
+                    case "active":
+                        SPActive(pw);
+                        break;
+                    case "history":
+                        SPHistory(pw);
+                        break;
+                    case "clear":
+                        SPClear(pw);
+                        break;
+                    case "release":
+                        if (args.length>1) {
+                            SPRelease(args[2], mBinder);
+                        } else {
+                            SPRelease("all", mBinder);
+                        }
+                        break;
+                    default:
+                        pw.println("SuperPenguins command not found!");
+                }
+            } else {
+                pw.println("SuperPenguins custom dump command!\n you should enter dumpsys power SP [ARG]");
+                pw.println("\tactive   history   clear   release [PackageName]");
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPActive(PrintWriter pw) {
         synchronized (mLock) {
             long mTmpTime;
             long mTmpCPUTime;
@@ -2779,6 +2837,7 @@ public final class PowerManagerService extends SystemService
             WakeLock w;
             long dividend;
 
+            validateSPBuffer();
 /*
             List<String> tmp = new ArrayList<String>();
             tmp.add("Hello");
@@ -2811,16 +2870,16 @@ public final class PowerManagerService extends SystemService
                 pw.print(padRight("" + w.mTotalCPUTime, 20));
                 dividend = w.mTotalTime - mTmpTime;
                 if (dividend != 0 && w.mTotalCPUTime != 0)
+                    //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold) 
                     pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 20));
                 else
                     pw.println(padRight("N/A", 20));
-
             }
         }
     }
 
 /* added by Super Penguins @hide */
-    private void dumpSPH(PrintWriter pw) {
+    protected void SPHistory(PrintWriter pw) {
         synchronized (mLock) {
             long mTmpTime;
             long mTmpCPUTime;
@@ -2857,48 +2916,6 @@ public final class PowerManagerService extends SystemService
                 pw.print(padRight("" + w.mOwnerPid,20));
                 pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is has been released, this is  how long it was active
                 pw.println(padRight("" + w.mTotalCPUTime, 20));
-            }
-        }
-    }
-
-/* added by Super Penguins @hide */
-    private void dumpSPF(PrintWriter pw) {
-        synchronized (mLock) {
-            long mTmpTime;
-            long mTmpCPUTime;
-            String appName;
-            WakeLock w;
-            long dividend;
-
-            // pw.println("======= FAULTY WAKELOCKS =======");
-            // pw.print(padRight("Num",4));
-            // pw.print(padRight("Type",30));
-            // pw.print(padRight("Wakelock Name",65));
-            // pw.print(padRight("Package Name",30));
-            // pw.print(padRight("PID",6));
-            // pw.print(padRight("mSecs",8));
-            // pw.print(padRight("mCPUs",8));
-            // pw.println(padRight("usage%", 8));
-            for (int i = 0; i < mSPBufferCurrent.size(); i++) {
-                w = mSPBufferCurrent.get(i);
-                appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
-                mTmpTime = w.mTotalTime;
-                mTmpCPUTime = w.mTotalCPUTime;
-                w.updateTime();
-        	pw.print(padRight("" + i,20));
-                pw.print(padRight(w.getLockLevelString(),100));
-                pw.print(padRight(w.mTag,100));
-                pw.print(padRight(appName,100));
-                pw.print(padRight("" + w.mOwnerPid,20));
-                pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is still active, this is just how long it has been active
-                pw.print(padRight("" + w.mTotalCPUTime, 20));
-                dividend = w.mTotalTime - mTmpTime;
-                if (dividend != 0 && w.mTotalCPUTime != 0) {
-                    if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold)
-                        pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 20));
-                } else {
-                    pw.println(padRight("N/A", 20));
-                }
             }
         }
     }
@@ -3656,6 +3673,10 @@ public final class PowerManagerService extends SystemService
             try {
                 if (args == null || args.length == 0) {
                     dumpInternal(pw);
+                } else if (args[0].equals("SP")) {
+                    dumpSP(pw, args, this);
+                }
+/*
                 } else if (args[0].equals("SPA")) {
                     dumpSPA(pw);
                 } else if (args[0].equals("SPH")) {
@@ -3664,7 +3685,10 @@ public final class PowerManagerService extends SystemService
                     dumpSPF(pw);
                 } else if (args[0].equals("CLEAR")) {
                     dumpClear(pw);
+                } else if (args[0].equals("RELEASE")) { //this is a test for now only to try releaseing from shell.
+                    SPReleaseAll();
                 }
+*/
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
