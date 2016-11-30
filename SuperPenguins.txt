@@ -40,4 +40,9 @@ make and update:
 to make framework and update:           mmma frameworks/base -j6; adb remount; adb shell stop; adb sync; adb shell start
 
 to make Setttings app and update:       mmma packages/apps/Settings/ -j6; adb remount; adb shell stop; adb sync; adb shell start
+---------
+refresh emulator system:
+
+rm out/target/product/generic_x86/*.img  ;  make -j6 ;  emulator -sdcard frameworks/mySdCardFile.img &
+
 

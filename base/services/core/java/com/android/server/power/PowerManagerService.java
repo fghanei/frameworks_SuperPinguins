@@ -830,6 +830,7 @@ public final class PowerManagerService extends SystemService
 
                 /* Super Penguins */
                 if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
+                    Slog.i("TEST-FRAMEWORK", "wakelock acquired:\n\t"+wakeLock);
                     mSPBufferCurrent.add(wakeLock);
                 }
             }
@@ -890,9 +891,10 @@ public final class PowerManagerService extends SystemService
 
             /* Super Penguins */
             wakeLock.updateTime();
-            mSPBufferCurrent.remove(wakeLock);
             if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
+                Slog.i("TEST-FRAMEWORK", "wakelock released: "+wakeLock);
                 mSPBufferHistory.add(wakeLock);
+                mSPBufferCurrent.remove(wakeLock);
             }
 
             removeWakeLockLocked(wakeLock, index);
@@ -2763,13 +2765,32 @@ public final class PowerManagerService extends SystemService
     }
 
 /* added by Super Penguins @hide */
-    protected void SPRelease(String packageName, BinderService mBinder) {
+//remember that args start from dumpsys power SP=(0) release=(1) [packagename=(2) [wakelockname=(3)]
+    protected void SPRelease(String[] args, BinderService mBinder) {
         synchronized (mLock) {
+            String packageName="all";
+            String wakeLockName="all";
+            if (args.length > 2) {
+                packageName = args[2];
+                if (args.length > 3) {
+                    if (!packageName.equals("all")) { //all packagename also brings all wakelocknames
+                        wakeLockName = args[3];
+                    }
+                } else {
+                    Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the wakelock name, removing all wakelocks for package: "+packageName);
+                }
+            } else {
+                Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the package name, ultimate remove activated :D");
+            }
+
             for (int i=0; i < mSPBufferCurrent.size(); i++) {
                 WakeLock wl = mSPBufferCurrent.get(i);
                 if (packageName.equals("all") || wl.mPackageName.equals(packageName)) {
-                    mBinder.releaseWakeLock(wl.mLock, 0);
-                    i--;
+                    if (wakeLockName.equals("all") || wl.mTag.equals(wakeLockName)) {                    
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-releasing wakelock:\n\t"+wl);
+                        mBinder.releaseWakeLock(wl.mLock, 0);
+                        i--;
+                    }
                 }
             }            
         }
@@ -2781,6 +2802,7 @@ public final class PowerManagerService extends SystemService
             for (int i=0; i < mSPBufferCurrent.size(); i++) {
                 WakeLock wl = mSPBufferCurrent.get(i);
                 if (findWakeLockIndexLocked(wl.mLock) < 0) {
+                    Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-removing wakelock entry from SPBuffer. probably a force release happened and it's cleaning up");
                     mSPBufferCurrent.remove(i);
                     i--;
                 }
@@ -2791,6 +2813,7 @@ public final class PowerManagerService extends SystemService
 /* added by Super Penguins @hide */
     protected void SPClear(PrintWriter pw) {
         synchronized (mLock) {
+            Slog.i("TEST-FRAMEWORK", "SuperPenguin is clearing SPBuffers");
             mSPBufferHistory.clear();
             mSPBufferCurrent.clear();       //TODO should we clear Current list too?
         }
@@ -2803,20 +2826,20 @@ public final class PowerManagerService extends SystemService
             if (args.length>1) {
                 switch (args[1]) {
                     case "active":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: active");
                         SPActive(pw);
                         break;
                     case "history":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: history");
                         SPHistory(pw);
                         break;
                     case "clear":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clear");
                         SPClear(pw);
                         break;
                     case "release":
-                        if (args.length>1) {
-                            SPRelease(args[2], mBinder);
-                        } else {
-                            SPRelease("all", mBinder);
-                        }
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called release");
+                        SPRelease(args, mBinder);
                         break;
                     default:
                         pw.println("SuperPenguins command not found!");
@@ -2861,19 +2884,19 @@ public final class PowerManagerService extends SystemService
                 mTmpTime = w.mTotalTime;
                 mTmpCPUTime = w.mTotalCPUTime;
                 w.updateTime();
-        	pw.print(padRight("" + i,20));
-                pw.print(padRight(w.getLockLevelString(),100));
-                pw.print(padRight(w.mTag,100));
-                pw.print(padRight(appName,100));
-                pw.print(padRight("" + w.mOwnerPid,20));
-                pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is still active, this is just how long it has been active
-                pw.print(padRight("" + w.mTotalCPUTime, 20));
+        	pw.print(i +" \t");
+                pw.print(w.getLockLevelString() + " \t");
+                pw.print(w.mTag + " \t");
+                pw.print(appName + " \t");
+                pw.print(w.mOwnerPid + " \t");
+                pw.print(w.mTotalTime + " \t"); //WakeLock is still active, this is just how long it has been active
+                pw.print(w.mTotalCPUTime + " \t");
                 dividend = w.mTotalTime - mTmpTime;
                 if (dividend != 0 && w.mTotalCPUTime != 0)
                     //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold) 
-                    pw.println(padRight("" + 100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime), 20));
+                    pw.println(100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime));
                 else
-                    pw.println(padRight("N/A", 20));
+                    pw.println("N/A");
             }
         }
     }
@@ -2909,13 +2932,13 @@ public final class PowerManagerService extends SystemService
                 appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
                 mTmpTime = w.mTotalTime;
                 mTmpCPUTime = w.mTotalCPUTime;
-                pw.print(padRight("" + i,20));
-                pw.print(padRight(w.getLockLevelString(),100));
-                pw.print(padRight(w.mTag,100));
-                pw.print(padRight(appName,100));
-                pw.print(padRight("" + w.mOwnerPid,20));
-                pw.print(padRight("" + w.mTotalTime,20)); //WakeLock is has been released, this is  how long it was active
-                pw.println(padRight("" + w.mTotalCPUTime, 20));
+        	pw.print(i +" \t");
+                pw.print(w.getLockLevelString() + " \t");
+                pw.print(w.mTag + " \t");
+                pw.print(appName + " \t");
+                pw.print(w.mOwnerPid + " \t");
+                pw.print(w.mTotalTime + " \t"); //WakeLock is still active, this is just how long it has been active
+                pw.println(w.mTotalCPUTime);
             }
         }
     }
@@ -3060,6 +3083,7 @@ public final class PowerManagerService extends SystemService
                     mTotalCPUTime = Long.parseLong(toks[13]) + Long.parseLong(toks[14]) + Long.parseLong(toks[15]) + Long.parseLong(toks[16]);
                     mTotalCPUTime *= 10; //this basically is the scale from CPU jiffy to millisecon
                 } catch (IOException ex) {
+                    Slog.w("TEST-FRAMEWORK", "problem with reading pid info from /proc entry. possibly the app has been force closed, and the wakelock object is getting released now.");
                     ex.printStackTrace();
                 } finally {
                     if (reader != null) {
@@ -3674,6 +3698,7 @@ public final class PowerManagerService extends SystemService
                 if (args == null || args.length == 0) {
                     dumpInternal(pw);
                 } else if (args[0].equals("SP")) {
+                    Slog.i("TEST-FRAMEWORK", "dump SP command entry");
                     dumpSP(pw, args, this);
                 }
 /*
