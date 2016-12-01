@@ -3057,6 +3057,7 @@ public final class PowerManagerService extends SystemService
         SPRemoveBlockedOnce(p_wName);
         SPRemoveAllowedAlways(p_wName);
         SPRemoveAllowedOnce(p_wName);
+        SPSave();
     }
 
 /* added by Super Penguins @hide */
@@ -3201,20 +3202,19 @@ public final class PowerManagerService extends SystemService
             appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
             p_w = SPConcat(appName, w.mTag);
 
-            Slog.i("TEST-FRAMEWORK", "active list number "+i + ": " + w);                
             shouldIgnore=false;
             for (int j = 0; j < allowedWakeLocksAlways.size(); j++) {
-                if (allowedWakeLocksAlways.get(j).equals(p_w));
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin found an always ignore case. \n\t"+allowedWakeLocksAlways.get(j) + " & " + p_w);                
-                shouldIgnore = true;
+                if (allowedWakeLocksAlways.get(j).equals(p_w)){
+                    shouldIgnore = true;
+                }
             }
             for (int j = 0; j < allowedWakeLocksOnce.size(); j++) {
-                if (allowedWakeLocksOnce.get(j).equals(p_w));
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin found an once ignore case. \n\t"+allowedWakeLocksOnce.get(j) + " & " + p_w);                
-                shouldIgnore = true;
+                if (allowedWakeLocksOnce.get(j).equals(p_w)) {
+                    shouldIgnore = true;
+                }
             }
             if (shouldIgnore) {
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin found an ignore case. not showing wakelock:\n\t"+w);                
+                Slog.i("TEST-FRAMEWORK", "---IGNORE CASE FOUND--- not showing wakelock:\n\t"+w);                
                 continue;
             }
             mTmpTime = w.mTotalTime;
@@ -3641,7 +3641,7 @@ public final class PowerManagerService extends SystemService
                     } 
                 }
                 if (shouldBlock) {
-                    Slog.i("TEST-FRAMEWORK", "SuperPenguin found a block case. force-releasing wakelock at the point of acquire:\n\t"+p_w);
+                    Slog.i("TEST-FRAMEWORK", "---BLOCK CASE FOUND--- force-releasing wakelock at the point of acquire:\n\t"+p_w);
                     releaseWakeLock(lock, 0);    
                 }
                 /*   */
