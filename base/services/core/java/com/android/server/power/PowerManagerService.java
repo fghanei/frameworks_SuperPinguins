@@ -3070,11 +3070,11 @@ public final class PowerManagerService extends SystemService
         String w;
         for (int i = 0; i < blockedWakeLocksOnce.size(); i++) {
             w = blockedWakeLocksOnce.get(i);
-            pw.println(w + "\t"+"Temporarily_Blocked)");
+            pw.println(w + "\t"+"Temporarily_Blocked");
         }
         for (int i = 0; i < blockedWakeLocksAlways.size(); i++) {
             w = blockedWakeLocksAlways.get(i);
-            pw.println(w + "\t"+"(Always_Blocked)");
+            pw.println(w + "\t"+"Always_Blocked");
         }
     }
 
@@ -3119,6 +3119,20 @@ public final class PowerManagerService extends SystemService
                 pw.println(w + "\t"+"Always_Allowed(Currently-Inactive)");
             }
         }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPClearAllAllowed(PrintWriter pw) {
+        allowedWakeLocksOnce.clear();
+        allowedWakeLocksAlways.clear();        
+        SPSave();
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPClearAllBlocked(PrintWriter pw) {
+        blockedWakeLocksOnce.clear();
+        blockedWakeLocksAlways.clear();        
+        SPSave();
     }
 
 
@@ -3199,6 +3213,14 @@ public final class PowerManagerService extends SystemService
                     case "getallowed":
                         Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getallowed");
                         SPGetAllowed(pw);
+                        break;
+                    case "clearallallowed":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallallowed");
+                        SPClearAllAllowed(pw);
+                        break;
+                    case "clearallblocked":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallblocked");
+                        SPClearAllBlocked(pw);
                         break;
                     default:
                         pw.println("SuperPenguins command not found!");
