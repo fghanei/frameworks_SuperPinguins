@@ -3070,11 +3070,11 @@ public final class PowerManagerService extends SystemService
         String w;
         for (int i = 0; i < blockedWakeLocksOnce.size(); i++) {
             w = blockedWakeLocksOnce.get(i);
-            pw.println(w + "\t"+"(Currently)");
+            pw.println(w + "\t"+"Temporarily_Blocked)");
         }
         for (int i = 0; i < blockedWakeLocksAlways.size(); i++) {
             w = blockedWakeLocksAlways.get(i);
-            pw.println(w + "\t"+"(Always)");
+            pw.println(w + "\t"+"(Always_Blocked)");
         }
     }
 
@@ -3086,13 +3086,38 @@ public final class PowerManagerService extends SystemService
             mSPFileLoaded = true;
         }
         String w;
+        boolean found;
         for (int i = 0; i < allowedWakeLocksOnce.size(); i++) {
             w = allowedWakeLocksOnce.get(i);
-            pw.println(w + "\t"+"(Currently)");
+            found = false; 
+            for (int j=0; j < mSPBufferCurrent.size(); j++) {
+                WakeLock wA = mSPBufferCurrent.get(j);
+                if (w.equals(SPConcat(wA.mPackageName, wA.mTag))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                pw.println(w + "\t"+"Temporarily_Allowed(Currently-Active)");
+            } else {
+                pw.println(w + "\t"+"Temporarily_Allowed(Currently-Inactive)");
+            }
         }
         for (int i = 0; i < allowedWakeLocksAlways.size(); i++) {
             w = allowedWakeLocksAlways.get(i);
-            pw.println(w + "\t"+"(Always)");
+            found = false; 
+            for (int j=0; j < mSPBufferCurrent.size(); j++) {
+                WakeLock wA = mSPBufferCurrent.get(j);
+                if (w.equals(SPConcat(wA.mPackageName, wA.mTag))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                pw.println(w + "\t"+"Always_Allowed(Currently-Active)");
+            } else {
+                pw.println(w + "\t"+"Always_Allowed(Currently-Inactive)");
+            }
         }
     }
 
@@ -3111,9 +3136,9 @@ public final class PowerManagerService extends SystemService
 
 /* added by Super Penguins @hide */
     protected void SPClear(PrintWriter pw) {
-        Slog.i("TEST-FRAMEWORK", "SuperPenguin is clearing SPBuffers, Allowed and Blocked Lists, and initialize SPLoadFile");
+        Slog.i("TEST-FRAMEWORK", "SuperPenguin is clearing Histy, Allowed and Blocked Lists, and initialize SPLoadFile");
         mSPBufferHistory.clear();
-        mSPBufferCurrent.clear();       //TODO should we clear Current list too?
+//        mSPBufferCurrent.clear();
     
         blockedWakeLocksAlways.clear();
         blockedWakeLocksOnce.clear();
