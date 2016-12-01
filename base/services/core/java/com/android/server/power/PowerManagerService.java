@@ -101,6 +101,8 @@ public final class PowerManagerService extends SystemService
     public static final ArrayList<WakeLock> mSPBufferCurrent = new ArrayList<WakeLock>();
     public static final ArrayList<WakeLock> mSPBufferHistory = new ArrayList<WakeLock>();
     public static final int SPThreshold = 20; //TODO this has to be tuned
+    public static final ArrayList<WakeLock> allowedWakelocks = new ArrayList<WakeLock>();
+    public static final ArrayList<WakeLock> blockedWakelocks = new ArrayList<WakeLock>();
 
     private static final String TAG = "PowerManagerService";
 
@@ -2786,13 +2788,190 @@ public final class PowerManagerService extends SystemService
             for (int i=0; i < mSPBufferCurrent.size(); i++) {
                 WakeLock wl = mSPBufferCurrent.get(i);
                 if (packageName.equals("all") || wl.mPackageName.equals(packageName)) {
-                    if (wakeLockName.equals("all") || wl.mTag.equals(wakeLockName)) {                    
+                    if (wakeLockName.equals("all") || wl.mTag.equals(wakeLockName)) {
                         Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-releasing wakelock:\n\t"+wl);
                         mBinder.releaseWakeLock(wl.mLock, 0);
                         i--;
                     }
                 }
-            }            
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPAllow(String[] args) {
+        String packageName="";
+        String wakeLockName="";
+
+        if (args.length > 2) {
+            packageName = args[2];
+            if (args.length > 3) {
+                if (!packageName.equals("all")) { //all packagename also brings all wakelocknames
+                    wakeLockName = args[3];
+                }
+            }
+        }
+
+        //add wakelock to allowedWakelocks if it was active
+        for (int i=0; i < mSPBufferCurrent.size(); i++) {
+            WakeLock wl = mSPBufferCurrent.get(i);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                allowedWakelocks.add(wl);
+            }
+        }
+
+        //add wakelock to allowedWakelocks if it was blocked
+        for (int k=0; k < blockedWakelocks.size(); k++) {
+            WakeLock wl = blockedWakelocks.get(k);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                allowedWakelocks.add(wl);
+            }
+        }
+
+        //remove wakelock to from blockedWakelocks if exists
+        for (int i = 0; i < blockedWakelocks.size(); i++) {
+            WakeLock wl = blockedWakelocks.get(i);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                blockedWakelocks.remove(i);
+            }
+        }
+
+        //remove wakelock to from mSPBufferCurrent if exists
+        for (int i = 0; i < mSPBufferCurrent.size(); i++) {
+            WakeLock wl = mSPBufferCurrent.get(i);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                mSPBufferCurrent.remove(i);
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPBlock(String[] args) {
+        String packageName="";
+        String wakeLockName="";
+
+        if (args.length > 2) {
+            packageName = args[2];
+            if (args.length > 3) {
+                if (!packageName.equals("all")) { //all packagename also brings all wakelocknames
+                    wakeLockName = args[3];
+                }
+            }
+        }
+
+        //add wakelock to blockedWakelocks if it was active
+        for (int i=0; i < mSPBufferCurrent.size(); i++) {
+            WakeLock wl = mSPBufferCurrent.get(i);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                blockedWakelocks.add(wl);
+            }
+        }
+
+        //add wakelock to blockedWakelocks if it was allowed
+        for (int k = 0; k < allowedWakelocks.size(); k++) {
+            WakeLock wl = allowedWakelocks.get(k);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                blockedWakelocks.add(wl);
+            }
+        }
+
+        //remove wakelock to from allowedWakelocks if exists
+        for (int m = 0; m < allowedWakelocks.size(); m++) {
+            WakeLock wl = allowedWakelocks.get(m);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                allowedWakelocks.remove(m);
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPGetAllowed(PrintWriter pw) {
+        long mTmpTime;
+        long mTmpCPUTime;
+        String appName;
+        WakeLock w;
+        long dividend;
+
+        for (int i = 0; i < allowedWakelocks.size(); i++) {
+            w = allowedWakelocks.get(i);
+            appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+            mTmpTime = w.mTotalTime;
+            mTmpCPUTime = w.mTotalCPUTime;
+            w.updateTime();
+        	pw.print(i +" \t");
+            pw.print(w.getLockLevelString() + " \t");
+            pw.print(w.mTag + " \t");
+            pw.print(appName + " \t");
+            pw.print(w.mOwnerPid + " \t");
+            pw.print(w.mTotalTime + " \t");
+            pw.print(w.mTotalCPUTime + " \t");
+            dividend = w.mTotalTime - mTmpTime;
+            if (dividend != 0 && w.mTotalCPUTime != 0)
+                pw.println(100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime));
+            else
+                pw.println("N/A");
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPGetBlocked(PrintWriter pw) {
+        long mTmpTime;
+        long mTmpCPUTime;
+        String appName;
+        WakeLock w;
+        long dividend;
+
+        for (int i = 0; i < blockedWakelocks.size(); i++) {
+            w = blockedWakelocks.get(i);
+            appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+            mTmpTime = w.mTotalTime;
+            mTmpCPUTime = w.mTotalCPUTime;
+            w.updateTime();
+        	pw.print(i +" \t");
+            pw.print(w.getLockLevelString() + " \t");
+            pw.print(w.mTag + " \t");
+            pw.print(appName + " \t");
+            pw.print(w.mOwnerPid + " \t");
+            pw.print(w.mTotalTime + " \t");
+            pw.print(w.mTotalCPUTime + " \t");
+            dividend = w.mTotalTime - mTmpTime;
+            if (dividend != 0 && w.mTotalCPUTime != 0)
+                pw.println(100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime));
+            else
+                pw.println("N/A");
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPMoveToActive(String[] args) {
+        String packageName="";
+        String wakeLockName="";
+
+        if (args.length > 2) {
+            packageName = args[2];
+            if (args.length > 3) {
+                if (!packageName.equals("all")) { //all packagename also brings all wakelocknames
+                    wakeLockName = args[3];
+                }
+            }
+        }
+
+        //remove wakelock to from blockedWakelocks if exists
+        for (int i = 0; i < blockedWakelocks.size(); i++) {
+            WakeLock wl = blockedWakelocks.get(i);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                mSPBufferCurrent.add(wl);
+                blockedWakelocks.remove(i);
+            }
+        }
+
+        //remove wakelock to from allowedWakelocks if exists
+        for (int k = 0; k < allowedWakelocks.size(); k++) {
+            WakeLock wl = allowedWakelocks.get(k);
+            if (wl.mPackageName.equals(packageName) && wl.mTag.equals(wakeLockName)) {
+                mSPBufferCurrent.add(wl);
+                allowedWakelocks.remove(k);
+            }
         }
     }
 
@@ -2840,6 +3019,26 @@ public final class PowerManagerService extends SystemService
                     case "release":
                         Slog.i("TEST-FRAMEWORK", "SuperPenguin command called release");
                         SPRelease(args, mBinder);
+                        break;
+                    case "allow":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allow");
+                        SPAllow(args);
+                        break;
+                    case "block":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called block");
+                        SPBlock(args);
+                        break;
+                    case "getallowed":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getallowed");
+                        SPGetAllowed(pw);
+                        break;
+                    case "getblocked":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getblocked");
+                        SPGetBlocked(pw);
+                        break;
+                    case "moveToActive":
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called moveToActive");
+                        SPMoveToActive(args);
                         break;
                     default:
                         pw.println("SuperPenguins command not found!");
@@ -2893,7 +3092,7 @@ public final class PowerManagerService extends SystemService
                 pw.print(w.mTotalCPUTime + " \t");
                 dividend = w.mTotalTime - mTmpTime;
                 if (dividend != 0 && w.mTotalCPUTime != 0)
-                    //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold) 
+                    //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold)
                     pw.println(100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime));
                 else
                     pw.println("N/A");
