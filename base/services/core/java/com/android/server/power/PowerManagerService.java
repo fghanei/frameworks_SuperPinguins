@@ -836,7 +836,7 @@ public final class PowerManagerService extends SystemService
 
                 /* Super Penguins */
                 if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
-                    Slog.i("TEST-FRAMEWORK", "wakelock acquired:\n\t"+wakeLock);
+                    Slog.i("TEST-FRAMEWORK", "wakelock acquired:\t" + wakeLock.getLockLevelString() + " " + wakeLock.mPackageName + " " +wakeLock.mTag + " uid:" + wakeLock.mOwnerUid );
                     mSPBufferCurrent.add(wakeLock);
                 }
             }
@@ -3238,7 +3238,7 @@ public final class PowerManagerService extends SystemService
         long mTmpCPUTime;
         String appName;
         WakeLock w;
-        long dividend;
+        long lifeTime;
 
         validateSPBuffer();
         String p_w;
@@ -3264,20 +3264,18 @@ public final class PowerManagerService extends SystemService
                 Slog.i("TEST-FRAMEWORK", "---IGNORE CASE FOUND--- not showing wakelock:\n\t"+w);                
                 continue;
             }
-            mTmpTime = w.mTotalTime;
-            mTmpCPUTime = w.mTotalCPUTime;
             w.updateTime();
+            lifeTime = w.mTotalTime - w.mStartTime;
             pw.print(i +"\t");
             pw.print(w.getLockLevelString() + "\t");
             pw.print(w.mTag + "\t");
             pw.print(appName + "\t");
             pw.print(w.mOwnerPid + "\t");
-            pw.print(w.mTotalTime + "\t"); //WakeLock is still active, this is just how long it has been active
+            pw.print(lifeTime + "\t"); //WakeLock is still active, this is just how long it has been active
             pw.print(w.mTotalCPUTime + "\t");
-            dividend = w.mTotalTime - mTmpTime;
-            if (dividend != 0 && w.mTotalCPUTime != 0)
+            if (lifeTime != 0)
                 //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold)
-                pw.println(100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime));
+                pw.println(10000*(w.mTotalCPUTime - w.mStartCPUTime)/(lifeTime)); 
             else
                 pw.println("N/A");
         }
@@ -3290,20 +3288,19 @@ public final class PowerManagerService extends SystemService
         long mTmpCPUTime;
         String appName;
         WakeLock w;
-        long dividend;
+        long lifeTime;
 
 // Num  Type    WakelockName    PackageName     PID     mSecs   mCPUs
         for (int i = 0; i < mSPBufferHistory.size(); i++) {
             w = mSPBufferHistory.get(i);
             appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
-            mTmpTime = w.mTotalTime;
-            mTmpCPUTime = w.mTotalCPUTime;
+            lifeTime = w.mTotalTime - w.mStartTime;
             pw.print(i +"\t");
             pw.print(w.getLockLevelString() + "\t");
             pw.print(w.mTag + "\t");
             pw.print(appName + "\t");
             pw.print(w.mOwnerPid + "\t");
-            pw.print(w.mTotalTime + "\t"); //WakeLock is still active, this is just how long it has been active
+            pw.print(lifeTime + "\t");
             pw.println(w.mTotalCPUTime);
         }
     }
@@ -3436,6 +3433,8 @@ public final class PowerManagerService extends SystemService
             updateTime();
             mStartTime = mTotalTime;
             mStartCPUTime = mTotalCPUTime;
+//            Slog.i("TEST-FRAMEWORK", "updateTime() initialized wakeLock: "+mPackageName+" "+mTag);
+//            Slog.i("TEST-FRAMEWORK", "mStartTime: "+ mStartTime+" mStartCPUTime"+mStartCPUTime);
         }
 
         /* Super Penguins */
@@ -3462,7 +3461,7 @@ public final class PowerManagerService extends SystemService
             } else {
                 mTotalCPUTime = 0;
             }
-            mTotalTime = System.currentTimeMillis() - mStartTime;
+            mTotalTime = System.currentTimeMillis();
         }
 
 
