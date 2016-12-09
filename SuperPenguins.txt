@@ -1,7 +1,6 @@
 -----------------------
 Modifications
 
-frameworks/base/core/java/android/os/PowerManager.java
 frameworks/base/services/core/java/com/android/server/power/PowerManagerService.java
 
 packages/apps/Settings/
@@ -23,26 +22,20 @@ packages/apps/Settings/
 Handy Commands
 -----------------------
 
-to run emulator with SD card:           emulator -sdcard frameworks/mySdCardFile.img &
-
----------
-check for syntax only:
-
-to check PowerManager:                  mmm frameworks/base -j4
-
-to check powerMangerService:            mmm frameworks/base/services/core -j4
-
-to check Settings app:                  mmm packages/apps/Settings/ -j4
-
----------
-make and update:
+framework
+to check syntax:                        mmm frameworks/base/services/core -j4
 
 to make framework and update:           mmma frameworks/base -j6; adb remount; adb shell stop; adb sync; adb shell start
 
-to make Setttings app and update:       mmma packages/apps/Settings/ -j6; adb remount; adb shell stop; adb sync; adb shell start
----------
-refresh emulator system:
 
-rm out/target/product/generic_x86/*.img  ;  make -j6 ;  emulator -sdcard frameworks/mySdCardFile.img &
+settings
+to check syntax:                        mmm packages/apps/Settings/ -j4
+
+to make Setttings app and update:       mmma packages/apps/Settings/ -j6; adb remount; adb shell stop; adb sync; adb shell start
+
+---------
+refresh emulator system:                rm out/target/product/generic_x86/*.img  ;  make -j6 
+
+to run emulator with SD card:           emulator -sdcard frameworks/mySdCardFile.img &
 
 
