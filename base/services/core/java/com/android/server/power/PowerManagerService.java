@@ -838,7 +838,7 @@ public final class PowerManagerService extends SystemService
 
                 /* Super Penguins */
                 if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
-                    Slog.i("TEST-FRAMEWORK", "wakelock acquired:\t" + wakeLock.getLockLevelString() + " " + wakeLock.mPackageName + " " +wakeLock.mTag + " uid:" + wakeLock.mOwnerUid );
+                    Slog.e("TEST-FRAMEWORK", "wakelock acquired:\t" + wakeLock.getLockLevelString() + " " + wakeLock.mPackageName + " " +wakeLock.mTag + " uid:" + wakeLock.mOwnerUid );
                     mSPBufferCurrent.add(wakeLock);
                 }
             }
@@ -900,7 +900,7 @@ public final class PowerManagerService extends SystemService
             /* Super Penguins */
             wakeLock.updateTime();
             if(!wakeLock.mTag.contains("alarm") && !wakeLock.mTag.contains("RILJ") && !wakeLock.mTag.contains("launch")){
-                Slog.i("TEST-FRAMEWORK", "wakelock released: "+wakeLock);
+                Slog.e("TEST-FRAMEWORK", "wakelock released: "+wakeLock);
                 mSPBufferHistory.add(wakeLock);
                 mSPBufferCurrent.remove(wakeLock);
             }
@@ -2908,7 +2908,7 @@ public final class PowerManagerService extends SystemService
                     mTotalCPUTime = Long.parseLong(toks[13]) + Long.parseLong(toks[14]) + Long.parseLong(toks[15]) + Long.parseLong(toks[16]);
                     mTotalCPUTime *= 10; //this basically is the scale from CPU jiffy to millisecon
                 } catch (IOException ex) {
-                    Slog.w("TEST-FRAMEWORK", "problem with reading pid info from /proc entry. possibly the app has been force closed, and the wakelock object is getting released now.");
+                    Slog.e("TEST-FRAMEWORK", "problem with reading pid info from /proc entry. possibly the app has been force closed, and the wakelock object is getting released now.");
                     ex.printStackTrace();
                 } finally {
                     if (reader != null) {
@@ -3148,7 +3148,7 @@ public final class PowerManagerService extends SystemService
                     }
                 }
                 if (shouldBlock) {
-                    Slog.i("TEST-FRAMEWORK", "---BLOCK CASE FOUND--- force-releasing wakelock at the point of acquire:\n\t"+p_w);
+                    Slog.e("TEST-FRAMEWORK", "---BLOCK CASE FOUND--- force-releasing wakelock at the point of acquire:\n\t"+p_w);
                     releaseWakeLock(lock, 0);
                 }
                 /**/
@@ -3550,7 +3550,7 @@ public final class PowerManagerService extends SystemService
                 if (args == null || args.length == 0) {
                     dumpInternal(pw);
                 } else if (args[0].equals("SP")) {
-                    Slog.i("TEST-FRAMEWORK", "dump SP command entry");
+                    Slog.e("TEST-FRAMEWORK", "dump SP command entry");
                     dumpSP(pw, args, this);
                 }
             } finally {
@@ -3679,13 +3679,13 @@ public final class PowerManagerService extends SystemService
         boolean result = false;
         List<String> tmp = SPLoadFromFile();
         try {
-            Slog.i("TEST-FRAMEWORK", "SPLoad: file loaded with lines: " + tmp.size());
+            Slog.e("TEST-FRAMEWORK", "SPLoad: file loaded with lines: " + tmp.size());
             int num;
             //order is BlcokedAlways -> AllowedAlways
             int line = 0;
             blockedWakeLocksAlways.clear();
             num = Integer.valueOf(tmp.get(line));
-            Slog.i("TEST-FRAMEWORK", "SPLoad:number of blocked always lines: " + num);
+            Slog.e("TEST-FRAMEWORK", "SPLoad:number of blocked always lines: " + num);
             line++;
             for (int i = 0; i < num; i++) {
                 blockedWakeLocksAlways.add(tmp.get(line + i));
@@ -3693,7 +3693,7 @@ public final class PowerManagerService extends SystemService
             line = line + num;
             allowedWakeLocksAlways.clear();
             num = Integer.valueOf(tmp.get(line));
-            Slog.i("TEST-FRAMEWORK", "SPLoad:number of allowed always lines: " + num);
+            Slog.e("TEST-FRAMEWORK", "SPLoad:number of allowed always lines: " + num);
             line++;
             for (int i = 0; i < num; i++) {
                 allowedWakeLocksAlways.add(tmp.get(line + i));
@@ -3712,12 +3712,12 @@ public final class PowerManagerService extends SystemService
             File dumpFile = new File(SP_CONFIG_FILE);
             if (dumpFile.exists()) {
                 dumpFile.delete();
-                Slog.i("TEST-FRAMEWORK", "SPSaveToFile: previous config file deleted.");
+                Slog.e("TEST-FRAMEWORK", "SPSaveToFile: previous config file deleted.");
             }
             dumpFile.createNewFile();
             FileWriter fw = new FileWriter(dumpFile.getAbsoluteFile());
             bw = new BufferedWriter(fw);
-            Slog.i("TEST-FRAMEWORK", "SPSaveToFile: file created for saving config");
+            Slog.e("TEST-FRAMEWORK", "SPSaveToFile: file created for saving config");
             bw.write("#this file is for user defined actions on applications using wakelocks. created @" + System.currentTimeMillis());
             bw.newLine();
             for(String data: config) {
@@ -3745,12 +3745,12 @@ public final class PowerManagerService extends SystemService
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(SP_CONFIG_FILE));
-            Slog.i("TEST-FRAMEWORK" ,"SPLoadFromFile: file opened.");
+            Slog.e("TEST-FRAMEWORK" ,"SPLoadFromFile: file opened.");
             String line = br.readLine(); //skipping header
             while ((line=br.readLine()) != null) {
                 data.add(line);
             }
-            Slog.i("TEST-FRAMEWORK" ,"SPLoadFromFile: succeeded.");
+            Slog.e("TEST-FRAMEWORK" ,"SPLoadFromFile: succeeded.");
         } catch (Exception e) {
             Slog.e("TEST-FRAMEWORK" ,"SPLoadFromFile: method failed.");
         } finally {
@@ -3834,17 +3834,17 @@ public final class PowerManagerService extends SystemService
                     wakeLockName = args[3];
                 }
             } else {
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the wakelock name, removing all wakelocks for package: "+packageName);
+                Slog.e("TEST-FRAMEWORK", "SuperPenguin force-release is not given the wakelock name, removing all wakelocks for package: "+packageName);
             }
         } else {
-            Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the package name, ultimate remove activated :D");
+            Slog.e("TEST-FRAMEWORK", "SuperPenguin force-release is not given the package name, ultimate remove activated :D");
         }
 
         for (int i=0; i < mSPBufferCurrent.size(); i++) {
             WakeLock wl = mSPBufferCurrent.get(i);
             if (packageName.equals("all") || wl.mPackageName.equals(packageName)) {
                 if (wakeLockName.equals("all") || wl.mTag.equals(wakeLockName)) {
-                    Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-releasing wakelock:\n\t"+wl);
+                    Slog.e("TEST-FRAMEWORK", "SuperPenguin is force-releasing wakelock:\n\t"+wl);
                     mBinder.releaseWakeLock(wl.mLock, 0);
                     i--;
                 }
@@ -4021,7 +4021,7 @@ public final class PowerManagerService extends SystemService
         for (int i=0; i < mSPBufferCurrent.size(); i++) {
             WakeLock wl = mSPBufferCurrent.get(i);
             if (findWakeLockIndexLocked(wl.mLock) < 0) {
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-removing wakelock entry from SPBuffer. probably a force release happened and it's cleaning up");
+                Slog.e("TEST-FRAMEWORK", "SuperPenguin is force-removing wakelock entry from SPBuffer. probably a force release happened and it's cleaning up");
                 mSPBufferCurrent.remove(i);
                 i--;
             }
@@ -4030,7 +4030,7 @@ public final class PowerManagerService extends SystemService
 
 /* added by Super Penguins @hide */
     protected void SPClear(PrintWriter pw) {
-        Slog.i("TEST-FRAMEWORK", "SuperPenguin is clearing Histy, Allowed and Blocked Lists, and initialize SPLoadFile");
+        Slog.e("TEST-FRAMEWORK", "SuperPenguin is clearing Histy, Allowed and Blocked Lists, and initialize SPLoadFile");
         mSPBufferHistory.clear();
         blockedWakeLocksAlways.clear();
         blockedWakeLocksOnce.clear();
@@ -4045,45 +4045,45 @@ public final class PowerManagerService extends SystemService
         synchronized (mLock) {
             if (args.length>1) {
                 if (args[1].equals("active")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: active");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called: active");
                         SPActive(pw);
                 } else if (args[1].equals("history")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: history");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called: history");
                         SPHistory(pw);
                 } else if (args[1].equals("clear")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clear");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called clear");
                         SPClear(pw);
                 } else if (args[1].equals("release")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called release");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called release");
                         SPRelease(args, mBinder);
                 } else if (args[1].equals("blockalways")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called blockalways");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called blockalways");
                         SPBlockAlways(args);
                         SPRelease(args, mBinder);
                 } else if (args[1].equals("blockonce")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called blockonce");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called blockonce");
                         SPBlockOnce(args);
                         SPRelease(args, mBinder);
                 } else if (args[1].equals("allowalways")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allowalways");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called allowalways");
                         SPAllowAlways(args);
                 } else if (args[1].equals("allowonce")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allowonce");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called allowonce");
                         SPAllowOnce(args);
                 } else if (args[1].equals("movetoactive")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called moveToActive");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called moveToActive");
                         SPMoveToActive(args);
                } else if (args[1].equals("getblocked")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getblocked");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called getblocked");
                         SPGetBlocked(pw);
                 } else if (args[1].equals("getallowed")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getallowed");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called getallowed");
                         SPGetAllowed(pw);
                 } else if (args[1].equals("clearallallowed")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallallowed");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called clearallallowed");
                         SPClearAllAllowed(pw);
                 } else if (args[1].equals("clearallblocked")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallblocked");
+                        Slog.e("TEST-FRAMEWORK", "SuperPenguin command called clearallblocked");
                         SPClearAllBlocked(pw);
                 } else {
                         pw.println("SuperPenguins command not found!");
@@ -4124,13 +4124,13 @@ public final class PowerManagerService extends SystemService
                 }
             }
             if (shouldIgnore) {
-                Slog.i("TEST-FRAMEWORK", "---IGNORE CASE FOUND--- not showing wakelock:\n\t"+w); 
+                Slog.e("TEST-FRAMEWORK", "---IGNORE CASE FOUND--- not showing wakelock:\n\t"+w); 
                 continue;
             }
             w.updateTime();
             lifeTime = w.mTotalTime - w.mStartTime;
             if (lifeTime < SP_MIN_LIFETIME) {
-                Slog.i("TEST-FRAMEWORK", "---YOUNGE WAKELOCK FOUND--- not showing wakelock:\n\t"+w);
+                Slog.e("TEST-FRAMEWORK", "---YOUNGE WAKELOCK FOUND--- not showing wakelock:\n\t"+w);
                 continue;
             }
             pw.print(i + "\t");
