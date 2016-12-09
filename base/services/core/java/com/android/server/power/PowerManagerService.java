@@ -2772,532 +2772,6 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-/* added by Super Penguins @hide */
-    protected boolean SPSave() {
-        boolean result = false;
-        try {
-            List<String> config = new ArrayList<String>();
-            int num;
-            //order is BlcokedAlways -> AllowedAlways
-            num = blockedWakeLocksAlways.size();
-            config.add(Integer.toString(num));
-            for (int i = 0; i < num; i++) {
-                config.add(blockedWakeLocksAlways.get(i));
-            }
-            num = allowedWakeLocksAlways.size();
-            config.add(Integer.toString(num));
-            for (int i = 0; i < num; i++) {
-                config.add(allowedWakeLocksAlways.get(i));
-            }
-            result = SPSaveToFile(config);
-        } catch (Exception e) {
-            Slog.e("TEST-FRAMEWORK", "SPSave: method failed.");
-        }
-        return result;
-    }
-
-/* added by Super Penguins @hide */
-    protected boolean SPLoad() {
-        boolean result = false;
-        List<String> tmp = SPLoadFromFile();
-        try {
-            Slog.i("TEST-FRAMEWORK", "SPLoad: file loaded with lines: " + tmp.size());
-            int num;
-            //order is BlcokedAlways -> AllowedAlways
-            int line = 0;
-            blockedWakeLocksAlways.clear();
-            num = Integer.valueOf(tmp.get(line));
-            Slog.i("TEST-FRAMEWORK", "SPLoad:number of blocked always lines: " + num);
-            line++;
-            for (int i = 0; i < num; i++) {
-                blockedWakeLocksAlways.add(tmp.get(line + i));
-            }
-            line = line + num;
-            allowedWakeLocksAlways.clear();
-            num = Integer.valueOf(tmp.get(line));
-            Slog.i("TEST-FRAMEWORK", "SPLoad:number of allowed always lines: " + num);
-            line++;
-            for (int i = 0; i < num; i++) {
-                allowedWakeLocksAlways.add(tmp.get(line + i));
-            }
-            result = true;
-        } catch (Exception e) {
-        }
-        return result;
-    }
-
-/* added by Super Penguins @hide */
-    protected boolean SPSaveToFile(List<String> config) {
-        boolean result = false;
-        BufferedWriter bw = null;
-        try {
-            File dumpFile = new File(SP_CONFIG_FILE);
-            if (dumpFile.exists()) {
-                dumpFile.delete();
-                Slog.i("TEST-FRAMEWORK", "SPSaveToFile: previous config file deleted.");
-            }
-            dumpFile.createNewFile();
-            FileWriter fw = new FileWriter(dumpFile.getAbsoluteFile());
-            bw = new BufferedWriter(fw);
-            Slog.i("TEST-FRAMEWORK", "SPSaveToFile: file created for saving config");
-            bw.write("#this file is for user defined actions on applications using wakelocks. created @" + System.currentTimeMillis());
-            bw.newLine();
-            for(String data: config) {
-                bw.write(data);
-                bw.newLine();
-            }
-            result = true;
-        } catch (Exception e) {
-            Slog.e("TEST-FRAMEWORK", "SPSaveToFile: method failed.");
-        } finally {
-            if (bw != null) {
-                try {
-                    bw.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return result;
-    }
-
-/* added by Super Penguins @hide */
-    public List<String> SPLoadFromFile() {
-        List<String> data = new ArrayList<String>();
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(SP_CONFIG_FILE));
-            Slog.i("TEST-FRAMEWORK" ,"SPLoadFromFile: file opened.");
-            String line = br.readLine(); //skipping header
-            while ((line=br.readLine()) != null) {
-                data.add(line);
-            }
-            Slog.i("TEST-FRAMEWORK" ,"SPLoadFromFile: succeeded.");
-        } catch (Exception e) {
-            Slog.e("TEST-FRAMEWORK" ,"SPLoadFromFile: method failed.");
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return data;
-    }
-
-/* added by Super Penguins @hide */
-    protected String SPConcat(String pName, String wName) {
-        String result = pName+"\t"+wName;
-        return result;
-    }
-
-/* added by Super Penguins @hide */
-    protected String[] SPExtract(String p_wName) {
-        String[] result = p_wName.split("\t");
-        return result;
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPRemoveBlockedAlways(String p_wName) {
-        //remove wakelock from blockedWakeLocksAlways if exists
-        String wl;
-        for (int i = 0; i < blockedWakeLocksAlways.size(); i++) {
-            wl = blockedWakeLocksAlways.get(i);
-            if (wl.equals(p_wName)) {
-                blockedWakeLocksAlways.remove(i);
-            }
-        }
-    }
-/* added by Super Penguins @hide */
-    protected void SPRemoveBlockedOnce(String p_wName) {
-        //remove wakelock from blockedWakeLocksOnce if exists
-        String wl;
-        for (int i = 0; i < blockedWakeLocksOnce.size(); i++) {
-            wl = blockedWakeLocksOnce.get(i);
-            if (wl.equals(p_wName)) {
-                blockedWakeLocksOnce.remove(i);
-            }
-        }
-    }
-/* added by Super Penguins @hide */
-    protected void SPRemoveAllowedAlways(String p_wName) {
-        //remove wakelock from allowedWakeLocksAlways if exists
-        String wl;
-        for (int i = 0; i < allowedWakeLocksAlways.size(); i++) {
-            wl = allowedWakeLocksAlways.get(i);
-            if (wl.equals(p_wName)) {
-                allowedWakeLocksAlways.remove(i);
-            }
-        }
-    }
-/* added by Super Penguins @hide */
-    protected void SPRemoveAllowedOnce(String p_wName) {
-        //remove wakelock from allowedWakeLocksOnce if exists
-        String wl;
-        for (int i = 0; i < allowedWakeLocksOnce.size(); i++) {
-            wl = allowedWakeLocksOnce.get(i);
-            if (wl.equals(p_wName)) {
-                allowedWakeLocksOnce.remove(i);
-            }
-        }
-    }
-
-/* added by Super Penguins @hide */
-//remember that args start from dumpsys power SP=(0) release=(1) [packagename=(2) [wakelockname=(3)]
-    protected void SPRelease(String[] args, BinderService mBinder) {
-        String packageName="all";
-        String wakeLockName="all";
-        if (args.length > 2) {
-            packageName = args[2];
-            if (args.length > 3) {
-                if (!packageName.equals("all")) { //all packagename also brings all wakelocknames
-                    wakeLockName = args[3];
-                }
-            } else {
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the wakelock name, removing all wakelocks for package: "+packageName);
-            }
-        } else {
-            Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the package name, ultimate remove activated :D");
-        }
-
-        for (int i=0; i < mSPBufferCurrent.size(); i++) {
-            WakeLock wl = mSPBufferCurrent.get(i);
-            if (packageName.equals("all") || wl.mPackageName.equals(packageName)) {
-                if (wakeLockName.equals("all") || wl.mTag.equals(wakeLockName)) {
-                    Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-releasing wakelock:\n\t"+wl);
-                    mBinder.releaseWakeLock(wl.mLock, 0);
-                    i--;
-                }
-            }
-        }
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPBlockAlways(String[] args) {
-        if (args.length<4) {
-            Slog.e("TEST-FRAMEWORK", "SPBlockAlways is called with not enough arguments");
-            return;
-        }
-        String pName = args[2];
-        String wName = args[3];
-        String p_wName = SPConcat(pName,wName);
-
-        SPRemoveBlockedAlways(p_wName);
-        SPRemoveBlockedOnce(p_wName);
-        SPRemoveAllowedAlways(p_wName);
-        SPRemoveAllowedOnce(p_wName);
-
-        blockedWakeLocksAlways.add(p_wName);
-        SPSave();
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPBlockOnce(String[] args) {
-        if (args.length<4) {
-            Slog.e("TEST-FRAMEWORK", "SPBlockOnce is called with not enough arguments");
-            return;
-        }
-        String pName = args[2];
-        String wName = args[3];
-        String p_wName = SPConcat(pName,wName);
-
-        SPRemoveBlockedOnce(p_wName);
-        SPRemoveAllowedOnce(p_wName);
-
-        blockedWakeLocksOnce.add(p_wName);
-    }
-
-
-/* added by Super Penguins @hide */
-    protected void SPAllowAlways(String[] args) {
-        if (args.length<4) {
-            Slog.e("TEST-FRAMEWORK", "SPAllowAlways is called with not enough arguments");
-            return;
-        }
-        String pName = args[2];
-        String wName = args[3];
-        String p_wName = SPConcat(pName,wName);
-
-        SPRemoveBlockedAlways(p_wName);
-        SPRemoveBlockedOnce(p_wName);
-        SPRemoveAllowedAlways(p_wName);
-        SPRemoveAllowedOnce(p_wName);
-
-        allowedWakeLocksAlways.add(p_wName);
-        SPSave();
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPAllowOnce(String[] args) {
-        if (args.length<4) {
-            Slog.e("TEST-FRAMEWORK", "SPAllowOnce is called with not enough arguments");
-            return;
-        }
-        String pName = args[2];
-        String wName = args[3];
-        String p_wName = SPConcat(pName,wName);
-
-        SPRemoveBlockedOnce(p_wName);
-        SPRemoveAllowedOnce(p_wName);
-
-        allowedWakeLocksOnce.add(p_wName);
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPMoveToActive(String[] args) {
-        if (args.length<4) {
-            Slog.e("TEST-FRAMEWORK", "SPAllowAlways is called with not enough arguments");
-            return;
-        }
-        String pName = args[2];
-        String wName = args[3];
-        String p_wName = SPConcat(pName,wName);
-
-        SPRemoveBlockedAlways(p_wName);
-        SPRemoveBlockedOnce(p_wName);
-        SPRemoveAllowedAlways(p_wName);
-        SPRemoveAllowedOnce(p_wName);
-        SPSave();
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPGetBlocked(PrintWriter pw) {
-        //first load the file if haven't
-        if (!mSPFileLoaded) {
-            SPLoad();
-            mSPFileLoaded = true;
-        }
-        String w;
-        for (int i = 0; i < blockedWakeLocksOnce.size(); i++) {
-            w = blockedWakeLocksOnce.get(i);
-            pw.println(w + "\t"+"Temporarily_Blocked");
-        }
-        for (int i = 0; i < blockedWakeLocksAlways.size(); i++) {
-            w = blockedWakeLocksAlways.get(i);
-            pw.println(w + "\t"+"Always_Blocked");
-        }
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPGetAllowed(PrintWriter pw) {
-        //first load the file if haven't
-        if (!mSPFileLoaded) {
-            SPLoad();
-            mSPFileLoaded = true;
-        }
-        String w;
-        boolean found;
-        for (int i = 0; i < allowedWakeLocksOnce.size(); i++) {
-            w = allowedWakeLocksOnce.get(i);
-            found = false;
-            for (int j=0; j < mSPBufferCurrent.size(); j++) {
-                WakeLock wA = mSPBufferCurrent.get(j);
-                if (w.equals(SPConcat(wA.mPackageName, wA.mTag))) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                pw.println(w + "\t"+"Temporarily_Allowed(Currently-Active)");
-            } else {
-                pw.println(w + "\t"+"Temporarily_Allowed(Currently-Inactive)");
-            }
-        }
-        for (int i = 0; i < allowedWakeLocksAlways.size(); i++) {
-            w = allowedWakeLocksAlways.get(i);
-            found = false;
-            for (int j=0; j < mSPBufferCurrent.size(); j++) {
-                WakeLock wA = mSPBufferCurrent.get(j);
-                if (w.equals(SPConcat(wA.mPackageName, wA.mTag))) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                pw.println(w + "\t"+"Always_Allowed(Currently-Active)");
-            } else {
-                pw.println(w + "\t"+"Always_Allowed(Currently-Inactive)");
-            }
-        }
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPClearAllAllowed(PrintWriter pw) {
-        allowedWakeLocksOnce.clear();
-        allowedWakeLocksAlways.clear();
-        SPSave();
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPClearAllBlocked(PrintWriter pw) {
-        blockedWakeLocksOnce.clear();
-        blockedWakeLocksAlways.clear();
-        SPSave();
-    }
-
-
-/* added by Super Penguins @hide */
-    protected void validateSPBuffer() {
-        for (int i=0; i < mSPBufferCurrent.size(); i++) {
-            WakeLock wl = mSPBufferCurrent.get(i);
-            if (findWakeLockIndexLocked(wl.mLock) < 0) {
-                Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-removing wakelock entry from SPBuffer. probably a force release happened and it's cleaning up");
-                mSPBufferCurrent.remove(i);
-                i--;
-            }
-        }
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPClear(PrintWriter pw) {
-        Slog.i("TEST-FRAMEWORK", "SuperPenguin is clearing Histy, Allowed and Blocked Lists, and initialize SPLoadFile");
-        mSPBufferHistory.clear();
-        blockedWakeLocksAlways.clear();
-        blockedWakeLocksOnce.clear();
-        allowedWakeLocksAlways.clear();
-        allowedWakeLocksOnce.clear();
-        mSPFileLoaded = false;
-    }
-
-
-/* added by Super Penguins @hide */
-    protected void dumpSP(PrintWriter pw, String[] args, BinderService mBinder) {
-        synchronized (mLock) {
-            if (args.length>1) {
-                if (args[1].equals("active")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: active");
-                        SPActive(pw);
-                } else if (args[1].equals("history")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: history");
-                        SPHistory(pw);
-                } else if (args[1].equals("clear")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clear");
-                        SPClear(pw);
-                } else if (args[1].equals("release")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called release");
-                        SPRelease(args, mBinder);
-                } else if (args[1].equals("blockalways")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called blockalways");
-                        SPBlockAlways(args);
-                        SPRelease(args, mBinder);
-                } else if (args[1].equals("blockonce")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called blockonce");
-                        SPBlockOnce(args);
-                        SPRelease(args, mBinder);
-                } else if (args[1].equals("allowalways")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allowalways");
-                        SPAllowAlways(args);
-                } else if (args[1].equals("allowonce")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allowonce");
-                        SPAllowOnce(args);
-                } else if (args[1].equals("movetoactive")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called moveToActive");
-                        SPMoveToActive(args);
-               } else if (args[1].equals("getblocked")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getblocked");
-                        SPGetBlocked(pw);
-                } else if (args[1].equals("getallowed")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getallowed");
-                        SPGetAllowed(pw);
-                } else if (args[1].equals("clearallallowed")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallallowed");
-                        SPClearAllAllowed(pw);
-                } else if (args[1].equals("clearallblocked")) {
-                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallblocked");
-                        SPClearAllBlocked(pw);
-                } else {
-                        pw.println("SuperPenguins command not found!");
-                }
-            } else {
-                pw.println("SuperPenguins custom dump command!\n you should enter dumpsys power SP [ARG]");
-                pw.println("\tactive   history   clear   release [P W]     blockalways [P W]      blockonce [P W]    allowalways [P W]      allowonce [P W]   movetoactive [P W]    getblocked     getallowed");
-            }
-        }
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPActive(PrintWriter pw) {
-        long mTmpTime;
-        long mTmpCPUTime;
-        String appName;
-        WakeLock w;
-        long lifeTime;
-
-        validateSPBuffer();
-        String p_w;
-        boolean shouldIgnore;
-// Num  Type    WakelockName    PackageName     PID     mSecs   mCPUs   usage%
-        for (int i = 0; i < mSPBufferCurrent.size(); i++) {
-            w = mSPBufferCurrent.get(i);
-            appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
-            p_w = SPConcat(appName, w.mTag);
-
-            shouldIgnore=false;
-            for (int j = 0; j < allowedWakeLocksAlways.size(); j++) {
-                if (allowedWakeLocksAlways.get(j).equals(p_w)){
-                    shouldIgnore = true;
-                }
-            }
-            for (int j = 0; j < allowedWakeLocksOnce.size(); j++) {
-                if (allowedWakeLocksOnce.get(j).equals(p_w)) {
-                    shouldIgnore = true;
-                }
-            }
-            if (shouldIgnore) {
-                Slog.i("TEST-FRAMEWORK", "---IGNORE CASE FOUND--- not showing wakelock:\n\t"+w); 
-                continue;
-            }
-            w.updateTime();
-            lifeTime = w.mTotalTime - w.mStartTime;
-            if (lifeTime < SP_MIN_LIFETIME) {
-                Slog.i("TEST-FRAMEWORK", "---YOUNGE WAKELOCK FOUND--- not showing wakelock:\n\t"+w);
-                continue;
-            }
-            pw.print(i + "\t");
-            pw.print(w.getLockLevelString() + "\t");
-            pw.print(w.mTag + "\t");
-            pw.print(appName + "\t");
-            pw.print(w.mOwnerPid + "\t");
-            pw.print(lifeTime + "\t"); //WakeLock is still active, this is just how long it has been active
-            pw.print(w.mTotalCPUTime + "\t");
-            if (lifeTime != 0)
-                //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold)
-                pw.println(10000*(w.mTotalCPUTime - w.mStartCPUTime)/(lifeTime));
-            else
-                pw.println("N/A");
-        }
-    }
-
-/* added by Super Penguins @hide */
-    protected void SPHistory(PrintWriter pw) {
-        long mTmpTime;
-        long mTmpCPUTime;
-        String appName;
-        WakeLock w;
-        long lifeTime;
-
-// Num  Type    WakelockName    PackageName     PID     mSecs   mCPUs
-        for (int i = 0; i < mSPBufferHistory.size(); i++) {
-            w = mSPBufferHistory.get(i);
-            appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
-            lifeTime = w.mTotalTime - w.mStartTime;
-            pw.print(i +"\t");
-            pw.print(w.getLockLevelString() + "\t");
-            pw.print(w.mTag + "\t");
-            pw.print(appName + "\t");
-            pw.print(w.mOwnerPid + "\t");
-            pw.print(lifeTime + "\t");
-            pw.println(w.mTotalCPUTime);
-        }
-    }
-
-/* added by Super Penguins @hide */
-    public static String padRight(String s, int n) {
-        return String.format("%1$-" + n + "s", s);
-    }
-
     private SuspendBlocker createSuspendBlockerLocked(String name) {
         SuspendBlocker suspendBlocker = new SuspendBlockerImpl(name);
         mSuspendBlockers.add(suspendBlocker);
@@ -3401,11 +2875,6 @@ public final class PowerManagerService extends SystemService
         public final int mOwnerPid;
         public boolean mNotifiedAcquired;
         public boolean mDisabled;
-        /* SuperPenguins */
-        public long mStartTime;
-        public long mTotalTime;
-        public long mStartCPUTime;
-        public long mTotalCPUTime;
 
         public WakeLock(IBinder lock, int flags, String tag, String packageName,
                 WorkSource workSource, String historyTag, int ownerUid, int ownerPid) {
@@ -3422,6 +2891,12 @@ public final class PowerManagerService extends SystemService
             mStartTime = mTotalTime;
             mStartCPUTime = mTotalCPUTime;
         }
+
+        /* SuperPenguins */
+        public long mStartTime;
+        public long mTotalTime;
+        public long mStartCPUTime;
+        public long mTotalCPUTime;
 
         /* Super Penguins */
         public void updateTime() {
@@ -4071,6 +3546,7 @@ public final class PowerManagerService extends SystemService
 
             final long ident = Binder.clearCallingIdentity();
             try {
+                /* Super Penguins added the if else block */
                 if (args == null || args.length == 0) {
                     dumpInternal(pw);
                 } else if (args[0].equals("SP")) {
@@ -4173,4 +3649,531 @@ public final class PowerManagerService extends SystemService
             powerHintInternal(hintId, data);
         }
     }
+
+/* added by Super Penguins @hide */
+    protected boolean SPSave() {
+        boolean result = false;
+        try {
+            List<String> config = new ArrayList<String>();
+            int num;
+            //order is BlcokedAlways -> AllowedAlways
+            num = blockedWakeLocksAlways.size();
+            config.add(Integer.toString(num));
+            for (int i = 0; i < num; i++) {
+                config.add(blockedWakeLocksAlways.get(i));
+            }
+            num = allowedWakeLocksAlways.size();
+            config.add(Integer.toString(num));
+            for (int i = 0; i < num; i++) {
+                config.add(allowedWakeLocksAlways.get(i));
+            }
+            result = SPSaveToFile(config);
+        } catch (Exception e) {
+            Slog.e("TEST-FRAMEWORK", "SPSave: method failed.");
+        }
+        return result;
+    }
+
+/* added by Super Penguins @hide */
+    protected boolean SPLoad() {
+        boolean result = false;
+        List<String> tmp = SPLoadFromFile();
+        try {
+            Slog.i("TEST-FRAMEWORK", "SPLoad: file loaded with lines: " + tmp.size());
+            int num;
+            //order is BlcokedAlways -> AllowedAlways
+            int line = 0;
+            blockedWakeLocksAlways.clear();
+            num = Integer.valueOf(tmp.get(line));
+            Slog.i("TEST-FRAMEWORK", "SPLoad:number of blocked always lines: " + num);
+            line++;
+            for (int i = 0; i < num; i++) {
+                blockedWakeLocksAlways.add(tmp.get(line + i));
+            }
+            line = line + num;
+            allowedWakeLocksAlways.clear();
+            num = Integer.valueOf(tmp.get(line));
+            Slog.i("TEST-FRAMEWORK", "SPLoad:number of allowed always lines: " + num);
+            line++;
+            for (int i = 0; i < num; i++) {
+                allowedWakeLocksAlways.add(tmp.get(line + i));
+            }
+            result = true;
+        } catch (Exception e) {
+        }
+        return result;
+    }
+
+/* added by Super Penguins @hide */
+    protected boolean SPSaveToFile(List<String> config) {
+        boolean result = false;
+        BufferedWriter bw = null;
+        try {
+            File dumpFile = new File(SP_CONFIG_FILE);
+            if (dumpFile.exists()) {
+                dumpFile.delete();
+                Slog.i("TEST-FRAMEWORK", "SPSaveToFile: previous config file deleted.");
+            }
+            dumpFile.createNewFile();
+            FileWriter fw = new FileWriter(dumpFile.getAbsoluteFile());
+            bw = new BufferedWriter(fw);
+            Slog.i("TEST-FRAMEWORK", "SPSaveToFile: file created for saving config");
+            bw.write("#this file is for user defined actions on applications using wakelocks. created @" + System.currentTimeMillis());
+            bw.newLine();
+            for(String data: config) {
+                bw.write(data);
+                bw.newLine();
+            }
+            result = true;
+        } catch (Exception e) {
+            Slog.e("TEST-FRAMEWORK", "SPSaveToFile: method failed.");
+        } finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
+    }
+
+/* added by Super Penguins @hide */
+    public List<String> SPLoadFromFile() {
+        List<String> data = new ArrayList<String>();
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(SP_CONFIG_FILE));
+            Slog.i("TEST-FRAMEWORK" ,"SPLoadFromFile: file opened.");
+            String line = br.readLine(); //skipping header
+            while ((line=br.readLine()) != null) {
+                data.add(line);
+            }
+            Slog.i("TEST-FRAMEWORK" ,"SPLoadFromFile: succeeded.");
+        } catch (Exception e) {
+            Slog.e("TEST-FRAMEWORK" ,"SPLoadFromFile: method failed.");
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return data;
+    }
+
+/* added by Super Penguins @hide */
+    protected String SPConcat(String pName, String wName) {
+        String result = pName+"\t"+wName;
+        return result;
+    }
+
+/* added by Super Penguins @hide */
+    protected String[] SPExtract(String p_wName) {
+        String[] result = p_wName.split("\t");
+        return result;
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPRemoveBlockedAlways(String p_wName) {
+        //remove wakelock from blockedWakeLocksAlways if exists
+        String wl;
+        for (int i = 0; i < blockedWakeLocksAlways.size(); i++) {
+            wl = blockedWakeLocksAlways.get(i);
+            if (wl.equals(p_wName)) {
+                blockedWakeLocksAlways.remove(i);
+            }
+        }
+    }
+/* added by Super Penguins @hide */
+    protected void SPRemoveBlockedOnce(String p_wName) {
+        //remove wakelock from blockedWakeLocksOnce if exists
+        String wl;
+        for (int i = 0; i < blockedWakeLocksOnce.size(); i++) {
+            wl = blockedWakeLocksOnce.get(i);
+            if (wl.equals(p_wName)) {
+                blockedWakeLocksOnce.remove(i);
+            }
+        }
+    }
+/* added by Super Penguins @hide */
+    protected void SPRemoveAllowedAlways(String p_wName) {
+        //remove wakelock from allowedWakeLocksAlways if exists
+        String wl;
+        for (int i = 0; i < allowedWakeLocksAlways.size(); i++) {
+            wl = allowedWakeLocksAlways.get(i);
+            if (wl.equals(p_wName)) {
+                allowedWakeLocksAlways.remove(i);
+            }
+        }
+    }
+/* added by Super Penguins @hide */
+    protected void SPRemoveAllowedOnce(String p_wName) {
+        //remove wakelock from allowedWakeLocksOnce if exists
+        String wl;
+        for (int i = 0; i < allowedWakeLocksOnce.size(); i++) {
+            wl = allowedWakeLocksOnce.get(i);
+            if (wl.equals(p_wName)) {
+                allowedWakeLocksOnce.remove(i);
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+//remember that args start from dumpsys power SP=(0) release=(1) [packagename=(2) [wakelockname=(3)]
+    protected void SPRelease(String[] args, BinderService mBinder) {
+        String packageName="all";
+        String wakeLockName="all";
+        if (args.length > 2) {
+            packageName = args[2];
+            if (args.length > 3) {
+                if (!packageName.equals("all")) { //all packagename also brings all wakelocknames
+                    wakeLockName = args[3];
+                }
+            } else {
+                Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the wakelock name, removing all wakelocks for package: "+packageName);
+            }
+        } else {
+            Slog.i("TEST-FRAMEWORK", "SuperPenguin force-release is not given the package name, ultimate remove activated :D");
+        }
+
+        for (int i=0; i < mSPBufferCurrent.size(); i++) {
+            WakeLock wl = mSPBufferCurrent.get(i);
+            if (packageName.equals("all") || wl.mPackageName.equals(packageName)) {
+                if (wakeLockName.equals("all") || wl.mTag.equals(wakeLockName)) {
+                    Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-releasing wakelock:\n\t"+wl);
+                    mBinder.releaseWakeLock(wl.mLock, 0);
+                    i--;
+                }
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPBlockAlways(String[] args) {
+        if (args.length<4) {
+            Slog.e("TEST-FRAMEWORK", "SPBlockAlways is called with not enough arguments");
+            return;
+        }
+        String pName = args[2];
+        String wName = args[3];
+        String p_wName = SPConcat(pName,wName);
+
+        SPRemoveBlockedAlways(p_wName);
+        SPRemoveBlockedOnce(p_wName);
+        SPRemoveAllowedAlways(p_wName);
+        SPRemoveAllowedOnce(p_wName);
+
+        blockedWakeLocksAlways.add(p_wName);
+        SPSave();
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPBlockOnce(String[] args) {
+        if (args.length<4) {
+            Slog.e("TEST-FRAMEWORK", "SPBlockOnce is called with not enough arguments");
+            return;
+        }
+        String pName = args[2];
+        String wName = args[3];
+        String p_wName = SPConcat(pName,wName);
+
+        SPRemoveBlockedOnce(p_wName);
+        SPRemoveAllowedOnce(p_wName);
+
+        blockedWakeLocksOnce.add(p_wName);
+    }
+
+
+/* added by Super Penguins @hide */
+    protected void SPAllowAlways(String[] args) {
+        if (args.length<4) {
+            Slog.e("TEST-FRAMEWORK", "SPAllowAlways is called with not enough arguments");
+            return;
+        }
+        String pName = args[2];
+        String wName = args[3];
+        String p_wName = SPConcat(pName,wName);
+
+        SPRemoveBlockedAlways(p_wName);
+        SPRemoveBlockedOnce(p_wName);
+        SPRemoveAllowedAlways(p_wName);
+        SPRemoveAllowedOnce(p_wName);
+
+        allowedWakeLocksAlways.add(p_wName);
+        SPSave();
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPAllowOnce(String[] args) {
+        if (args.length<4) {
+            Slog.e("TEST-FRAMEWORK", "SPAllowOnce is called with not enough arguments");
+            return;
+        }
+        String pName = args[2];
+        String wName = args[3];
+        String p_wName = SPConcat(pName,wName);
+
+        SPRemoveBlockedOnce(p_wName);
+        SPRemoveAllowedOnce(p_wName);
+
+        allowedWakeLocksOnce.add(p_wName);
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPMoveToActive(String[] args) {
+        if (args.length<4) {
+            Slog.e("TEST-FRAMEWORK", "SPAllowAlways is called with not enough arguments");
+            return;
+        }
+        String pName = args[2];
+        String wName = args[3];
+        String p_wName = SPConcat(pName,wName);
+
+        SPRemoveBlockedAlways(p_wName);
+        SPRemoveBlockedOnce(p_wName);
+        SPRemoveAllowedAlways(p_wName);
+        SPRemoveAllowedOnce(p_wName);
+        SPSave();
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPGetBlocked(PrintWriter pw) {
+        //first load the file if haven't
+        if (!mSPFileLoaded) {
+            SPLoad();
+            mSPFileLoaded = true;
+        }
+        String w;
+        for (int i = 0; i < blockedWakeLocksOnce.size(); i++) {
+            w = blockedWakeLocksOnce.get(i);
+            pw.println(w + "\t"+"Temporarily_Blocked");
+        }
+        for (int i = 0; i < blockedWakeLocksAlways.size(); i++) {
+            w = blockedWakeLocksAlways.get(i);
+            pw.println(w + "\t"+"Always_Blocked");
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPGetAllowed(PrintWriter pw) {
+        //first load the file if haven't
+        if (!mSPFileLoaded) {
+            SPLoad();
+            mSPFileLoaded = true;
+        }
+        String w;
+        boolean found;
+        for (int i = 0; i < allowedWakeLocksOnce.size(); i++) {
+            w = allowedWakeLocksOnce.get(i);
+            found = false;
+            for (int j=0; j < mSPBufferCurrent.size(); j++) {
+                WakeLock wA = mSPBufferCurrent.get(j);
+                if (w.equals(SPConcat(wA.mPackageName, wA.mTag))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                pw.println(w + "\t"+"Temporarily_Allowed(Currently-Active)");
+            } else {
+                pw.println(w + "\t"+"Temporarily_Allowed(Currently-Inactive)");
+            }
+        }
+        for (int i = 0; i < allowedWakeLocksAlways.size(); i++) {
+            w = allowedWakeLocksAlways.get(i);
+            found = false;
+            for (int j=0; j < mSPBufferCurrent.size(); j++) {
+                WakeLock wA = mSPBufferCurrent.get(j);
+                if (w.equals(SPConcat(wA.mPackageName, wA.mTag))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                pw.println(w + "\t"+"Always_Allowed(Currently-Active)");
+            } else {
+                pw.println(w + "\t"+"Always_Allowed(Currently-Inactive)");
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPClearAllAllowed(PrintWriter pw) {
+        allowedWakeLocksOnce.clear();
+        allowedWakeLocksAlways.clear();
+        SPSave();
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPClearAllBlocked(PrintWriter pw) {
+        blockedWakeLocksOnce.clear();
+        blockedWakeLocksAlways.clear();
+        SPSave();
+    }
+
+
+/* added by Super Penguins @hide */
+    protected void validateSPBuffer() {
+        for (int i=0; i < mSPBufferCurrent.size(); i++) {
+            WakeLock wl = mSPBufferCurrent.get(i);
+            if (findWakeLockIndexLocked(wl.mLock) < 0) {
+                Slog.i("TEST-FRAMEWORK", "SuperPenguin is force-removing wakelock entry from SPBuffer. probably a force release happened and it's cleaning up");
+                mSPBufferCurrent.remove(i);
+                i--;
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPClear(PrintWriter pw) {
+        Slog.i("TEST-FRAMEWORK", "SuperPenguin is clearing Histy, Allowed and Blocked Lists, and initialize SPLoadFile");
+        mSPBufferHistory.clear();
+        blockedWakeLocksAlways.clear();
+        blockedWakeLocksOnce.clear();
+        allowedWakeLocksAlways.clear();
+        allowedWakeLocksOnce.clear();
+        mSPFileLoaded = false;
+    }
+
+
+/* added by Super Penguins @hide */
+    protected void dumpSP(PrintWriter pw, String[] args, BinderService mBinder) {
+        synchronized (mLock) {
+            if (args.length>1) {
+                if (args[1].equals("active")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: active");
+                        SPActive(pw);
+                } else if (args[1].equals("history")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called: history");
+                        SPHistory(pw);
+                } else if (args[1].equals("clear")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clear");
+                        SPClear(pw);
+                } else if (args[1].equals("release")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called release");
+                        SPRelease(args, mBinder);
+                } else if (args[1].equals("blockalways")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called blockalways");
+                        SPBlockAlways(args);
+                        SPRelease(args, mBinder);
+                } else if (args[1].equals("blockonce")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called blockonce");
+                        SPBlockOnce(args);
+                        SPRelease(args, mBinder);
+                } else if (args[1].equals("allowalways")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allowalways");
+                        SPAllowAlways(args);
+                } else if (args[1].equals("allowonce")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called allowonce");
+                        SPAllowOnce(args);
+                } else if (args[1].equals("movetoactive")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called moveToActive");
+                        SPMoveToActive(args);
+               } else if (args[1].equals("getblocked")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getblocked");
+                        SPGetBlocked(pw);
+                } else if (args[1].equals("getallowed")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called getallowed");
+                        SPGetAllowed(pw);
+                } else if (args[1].equals("clearallallowed")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallallowed");
+                        SPClearAllAllowed(pw);
+                } else if (args[1].equals("clearallblocked")) {
+                        Slog.i("TEST-FRAMEWORK", "SuperPenguin command called clearallblocked");
+                        SPClearAllBlocked(pw);
+                } else {
+                        pw.println("SuperPenguins command not found!");
+                }
+            } else {
+                pw.println("SuperPenguins custom dump command!\n you should enter dumpsys power SP [ARG]");
+                pw.println("\tactive   history   clear   release [P W]     blockalways [P W]      blockonce [P W]    allowalways [P W]      allowonce [P W]   movetoactive [P W]    getblocked     getallowed");
+            }
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPActive(PrintWriter pw) {
+        long mTmpTime;
+        long mTmpCPUTime;
+        String appName;
+        WakeLock w;
+        long lifeTime;
+
+        validateSPBuffer();
+        String p_w;
+        boolean shouldIgnore;
+// Num  Type    WakelockName    PackageName     PID     mSecs   mCPUs   usage%
+        for (int i = 0; i < mSPBufferCurrent.size(); i++) {
+            w = mSPBufferCurrent.get(i);
+            appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+            p_w = SPConcat(appName, w.mTag);
+
+            shouldIgnore=false;
+            for (int j = 0; j < allowedWakeLocksAlways.size(); j++) {
+                if (allowedWakeLocksAlways.get(j).equals(p_w)){
+                    shouldIgnore = true;
+                }
+            }
+            for (int j = 0; j < allowedWakeLocksOnce.size(); j++) {
+                if (allowedWakeLocksOnce.get(j).equals(p_w)) {
+                    shouldIgnore = true;
+                }
+            }
+            if (shouldIgnore) {
+                Slog.i("TEST-FRAMEWORK", "---IGNORE CASE FOUND--- not showing wakelock:\n\t"+w); 
+                continue;
+            }
+            w.updateTime();
+            lifeTime = w.mTotalTime - w.mStartTime;
+            if (lifeTime < SP_MIN_LIFETIME) {
+                Slog.i("TEST-FRAMEWORK", "---YOUNGE WAKELOCK FOUND--- not showing wakelock:\n\t"+w);
+                continue;
+            }
+            pw.print(i + "\t");
+            pw.print(w.getLockLevelString() + "\t");
+            pw.print(w.mTag + "\t");
+            pw.print(appName + "\t");
+            pw.print(w.mOwnerPid + "\t");
+            pw.print(lifeTime + "\t"); //WakeLock is still active, this is just how long it has been active
+            pw.print(w.mTotalCPUTime + "\t");
+            if (lifeTime != 0)
+                //FOR FAULTY ONES, uncomment this: if (100*(w.mTotalCPUTime - mTmpCPUTime)/(w.mTotalTime - mTmpTime) < SPThreshold)
+                pw.println(10000*(w.mTotalCPUTime - w.mStartCPUTime)/(lifeTime));
+            else
+                pw.println("N/A");
+        }
+    }
+
+/* added by Super Penguins @hide */
+    protected void SPHistory(PrintWriter pw) {
+        long mTmpTime;
+        long mTmpCPUTime;
+        String appName;
+        WakeLock w;
+        long lifeTime;
+
+// Num  Type    WakelockName    PackageName     PID     mSecs   mCPUs
+        for (int i = 0; i < mSPBufferHistory.size(); i++) {
+            w = mSPBufferHistory.get(i);
+            appName = mContext.getPackageManager().getNameForUid(w.mOwnerUid);
+            lifeTime = w.mTotalTime - w.mStartTime;
+            pw.print(i +"\t");
+            pw.print(w.getLockLevelString() + "\t");
+            pw.print(w.mTag + "\t");
+            pw.print(appName + "\t");
+            pw.print(w.mOwnerPid + "\t");
+            pw.print(lifeTime + "\t");
+            pw.println(w.mTotalCPUTime);
+        }
+    }
+
+/* added by Super Penguins @hide */
+    public static String padRight(String s, int n) {
+        return String.format("%1$-" + n + "s", s);
+    }
+
 }
